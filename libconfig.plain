@@ -1,0 +1,89 @@
+#ifndef LIBCONFIG_H
+#define LIBCONFIG_H
+
+
+#pragma warning(disable : 4996)
+/* this is the error exit function */
+#define panic(m) (fprintf(stderr,"Panic: %s!\n",m), exit(-1))
+
+#define store_octa(val,addr) (ll=mem_find(addr),ll->tet=(val).h,(ll+1)->tet=(val).l,true)
+#define store_tetra(val,addr) (ll=mem_find(addr),ll->tet=(val).l,true)
+#define store_wyde(val,addr) (ll=mem_find(addr),ll->tet=(ll->tet&~0xFFFF)|((val).l&0xFFFF),true)
+#define store_byte(val,addr) (ll=mem_find(addr),ll->tet=(ll->tet&~0xFF)|((val).l&0xFF),true)
+
+#define load_octa(val,addr) (ll=mem_find(addr),(val)->h=ll->tet,(val)->l=(ll+1)->tet,true)
+#define load_tetra(val,addr) (ll=mem_find(addr),(val)->h=0,(val)->l=ll->tet,true)
+#define load_byte(val,addr) (ll=mem_find(addr),(val)->h=0,(val)->l=(ll->tet>>(8*((addr).l&3)))&0xFF,true)
+
+#define store_octa_uncached(val,addr) store_octa(val,addr) 
+#define load_octa_uncached(val,addr) load_octa(val,addr)
+
+
+#define load_instruction(inst,loc) (ll=mem_find(loc),*(inst)=ll->tet,true)
+#define store_exec_translation(virt,phys)
+#define store_data_translation(virt,phys)
+
+#define	MMIX_DELAY(ms,d)  Sleep(ms); d=ms
+
+/* define this to check for external asynchronous ineterrupts*/
+#define MMIX_GET_INTERRUPT
+
+/*convert filenames to file numbers */
+#define filename2file(filename, c) (c)
+
+/* this code is executed after processing the commandline */
+#define MMIX_AFTER_COMMANDLINE
+
+/* this code is executed before MMIX boots */
+#define  MMIX_PREBOOT
+
+/* this code is executed when MMIX enters the handler for Ctrl-C */
+#define   MMIX_CTRL_HANDLER
+
+/* this code defines additional options */
+#define MMIX_OPTIONS  
+
+/* this defines new interactions for the user */
+#define MMIX_INTERACT_STRING 
+
+/* this code defines the actions for the strings above */
+#define MMIX_INTERACT_ACTION
+
+#ifdef MMIX_PRINT
+extern int mmix_printf(char *format,...);
+extern int mmix_fputc(int c, FILE *f);
+#define printf(...) mmix_printf(__VA_ARGS__)
+#define fprintf(file,...) mmix_printf(__VA_ARGS__)
+#define fputc(c,f) mmix_fputc(c,f)
+#endif
+
+/* define this if you need the tetra inside the mem_node */
+#define MEM_NODE_TET tetra tet; /* the tetrabyte of simulated memory */
+
+#define write_all_data_cache()
+#define clear_all_instruction_cache()
+#define clear_all_data_cache()
+#define update_vtc(key) zero_octa
+#define clear_all_data_vtc()
+#define clear_all_instruction_vtc()
+#define preload_data_cache(w,xx)
+#define prego_instruction(w,xx)
+#define store_data_cache(w,xx)
+#define delete_data_cache(w,xx)
+#define delete_instruction_cache(w,xx)
+
+// do we need this always ?
+//include <setjmp.h>
+//include "mmixlib.h"
+
+//extern int ybyte2file_no[256]; /* mapping internal to external files */
+//define YBYTE2FILENO(ybyte) ybyte2file_no[ybyte]
+//define NAME2FILENO(name,ybyte) (ybyte2file_no[ybyte]=filename2file(name,ybyte))
+
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
+
+
+#endif
