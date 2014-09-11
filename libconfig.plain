@@ -1,8 +1,10 @@
 #ifndef LIBCONFIG_H
 #define LIBCONFIG_H
 
-
+#ifdef WIN32
 #pragma warning(disable : 4996)
+#endif
+
 /* this is the error exit function */
 #define panic(m) (fprintf(stderr,"Panic: %s!\n",m), exit(-1))
 
@@ -23,7 +25,11 @@
 #define store_exec_translation(virt,phys)
 #define store_data_translation(virt,phys)
 
+#ifdef WIN32
 #define	MMIX_DELAY(ms,d)  Sleep(ms); d=ms
+#else
+#define	MMIX_DELAY(ms,d)  usleep(1000*ms); d=ms
+#endif
 
 /* define this to check for external asynchronous ineterrupts*/
 #define MMIX_GET_INTERRUPT
@@ -56,6 +62,14 @@ extern int mmix_fputc(int c, FILE *f);
 #define fprintf(file,...) mmix_printf(__VA_ARGS__)
 #define fputc(c,f) mmix_fputc(c,f)
 #endif
+
+#define MMIX_USAGE if (!*cur_arg) scan_option("?",true) /* exit with usage note */
+
+#define  MMIX_BREAK_LOOP false
+
+#define  MMIX_BOOT false
+
+#define MMIX_END halted
 
 /* define this if you need the tetra inside the mem_node */
 #define MEM_NODE_TET tetra tet; /* the tetrabyte of simulated memory */

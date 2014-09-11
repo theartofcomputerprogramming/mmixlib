@@ -293,7 +293,7 @@ G=zbyte;@+ L=0;@+ O=0;
 for (j=G+G;j<256+256;j++,ll++,aux.l+=4) read_tet(), ll->tet=tet;
 inst_ptr.h=(ll-2)->tet, inst_ptr.l=(ll-1)->tet; /* \.{Main} */
 (ll+2*12)->tet=G<<24;
-g[255]=incr(aux,12*8); /* we will |UNSAVE| from here, to get going */
+g[255]=incr(aux,12*8); /* we will \.{UNSAVE} from here, to get going */
 @y
 @<Load the postamble@>=
 { octa x;
@@ -618,7 +618,7 @@ profiling=false;
 interrupt=false;
 
 @ @<Boot the machine@>=
-memset(l,0,sizeof(l));
+memset(l,0,lring_size*sizeof(octa));
 memset(g,0,sizeof(g));
 L=O=S=0;
 G=g[rG].l=255;
@@ -783,7 +783,7 @@ page_fault:
 @z
 
 @x
-case LDO: case LDOI: case LDOU: case LDOUI: case LDUNC: case LDUNCI:@/
+case LDO: case LDOI: case LDOU: case LDOUI: case LDUNC: case LDUNCI:
  w.l&=-8;@+ ll=mem_find(w);
  test_load_bkpt(ll);@+test_load_bkpt(ll+1);
  x.h=ll->tet;@+ x.l=(ll+1)->tet;
@@ -1030,8 +1030,10 @@ stack_store(x);
 g[rS]=incr(g[rS],-8);
 ll=mem_find(g[rS]);
 test_load_bkpt(ll);@+test_load_bkpt(ll+1);
-if (k==rZ+1) x.l=G=g[rG].l=ll->tet>>24, a.l=g[rA].l=(ll+1)->tet&0x3ffff;
-else g[k].h=ll->tet, g[k].l=(ll+1)->tet;
+if (k==rZ+1) {
+  x.l=G=g[rG].l=ll->tet>>24, a.l=g[rA].l=(ll+1)->tet&0x3ffff;
+  if (G<32) x.l=G=g[rG].l=32;
+}@+else g[k].h=ll->tet, g[k].l=(ll+1)->tet;
 if (stack_tracing) {
   tracing=true;
   if (cur_line) show_line();
@@ -1631,11 +1633,11 @@ break;
 @x
 @d RESUME_AGAIN 0 /* repeat the command in rX as if in location $\rm rW-4$ */
 @d RESUME_CONT 1 /* same, but substitute rY and rZ for operands */
-@d RESUME_SET 2 /* set r[X] to rZ */
+@d RESUME_SET 2 /* set register \$X to rZ */
 @y
 @d RESUME_AGAIN 0 /* repeat the command in rX as if in location $\rm rW-4$ */
 @d RESUME_CONT 1 /* same, but substitute rY and rZ for operands */
-@d RESUME_SET 2 /* set r[X] to rZ */
+@d RESUME_SET 2 /* set register \$X to rZ */
 @d RESUME_TRANS 3 /* install $\rm(rY,rZ)$ into IT-cache or DT-cache,
         then |RESUME_AGAIN| */
 @z
@@ -1717,9 +1719,9 @@ else
 
 
 @x
-  if (g[rI].l==0 && g[rI].h==0) tracing=breakpoint=true;
+  if (g[rI].l<=info[op].oops && g[rI].l && g[rI].h==0) tracing=breakpoint=true;
 @y
-  if (g[rI].l==0 && g[rI].h==0) g[rQ].l |= IN_BIT, new_Q.l |= IN_BIT; /* set the i bit */
+  if (g[rI].l<=info[op].oops && g[rI].l && g[rI].h==0) g[rQ].l |= IN_BIT, new_Q.l |= IN_BIT; 
 @z
 
 
@@ -1846,6 +1848,7 @@ int mmix_lib_initialize(void)
 }
 
 @ @(libinit.c@>=
+#include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
 #include "libconfig.h"
@@ -1955,8 +1958,11 @@ page_fault:
 
 @ @(libperform.c@>=
 #include <stdio.h>
+#include <string.h>
 #ifdef WIN32
 #include <windows.h>
+#else
+#include <unistd.h>
 #endif
 #include "libconfig.h"
 #include "libarith.h"
@@ -2030,8 +2036,6 @@ int mmix_lib_finalize(void)
 
 jmp_buf error_exit;
 
-MMIX_GLOBALS
-
 int main(argc,argv)
   int argc;
   char *argv[];
@@ -2059,7 +2063,7 @@ boot:
   
   mmix_load_file(*cur_arg);
   mmix_commandline(argc, argv);
-  while (vmb.connected) {
+  while (true) {
     if (interrupt && !breakpoint) breakpoint=interacting=true, interrupt=false;
     else if (!(inst_ptr.h&sign_bit) || show_operating_system || 
           (inst_ptr.h==0x80000000 && inst_ptr.l==0))
@@ -2068,7 +2072,7 @@ boot:
 		if (!mmix_interact()) goto end_simulation;
       }
     }
-    if (halted) break;
+    if (MMIX_END) break;
     do   
     { if (!resuming)
         mmix_fetch_instruction();       
@@ -2076,7 +2080,7 @@ boot:
       mmix_trace();
       mmix_dynamic_trap();
       if (resuming && op!=RESUME) resuming=false; 
-	  if (!resuming && MMIX_BREAK_LOOP) break; 
+      if (!resuming && MMIX_BREAK_LOOP) break; 
     } while (resuming || (!interrupt && !breakpoint));
     if (interact_after_break) 
        interacting=true, interact_after_break=false;
