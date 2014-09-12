@@ -5,17 +5,15 @@
 #pragma warning(disable : 4996)
 #endif
 
-/* this is the error exit function */
-#define panic(m) (fprintf(stderr,"Panic: %s!\n",m), exit(-1))
-
 #define store_octa(val,addr) (ll=mem_find(addr),ll->tet=(val).h,(ll+1)->tet=(val).l,true)
 #define store_tetra(val,addr) (ll=mem_find(addr),ll->tet=(val).l,true)
-#define store_wyde(val,addr) (ll=mem_find(addr),ll->tet=(ll->tet&~0xFFFF)|((val).l&0xFFFF),true)
-#define store_byte(val,addr) (ll=mem_find(addr),ll->tet=(ll->tet&~0xFF)|((val).l&0xFF),true)
+#define store_wyde(val,addr) (ll=mem_find(addr),ll->tet=(ll->tet&(~(0xFFFF<<((1-((addr).l&0x1))<<4))))|(((val).l&0xFFFF)<<((1-((addr).l&0x1))<<4)),true)
+#define store_byte(val,addr) (ll=mem_find(addr),ll->tet=(ll->tet&(~(0xFF<<((3-((addr).l&0x3))<<3))))|(((val).l&0xFF)<<((3-((addr).l&0x3))<<3)),true)
 
 #define load_octa(val,addr) (ll=mem_find(addr),(val)->h=ll->tet,(val)->l=(ll+1)->tet,true)
 #define load_tetra(val,addr) (ll=mem_find(addr),(val)->h=0,(val)->l=ll->tet,true)
-#define load_byte(val,addr) (ll=mem_find(addr),(val)->h=0,(val)->l=(ll->tet>>(8*((addr).l&3)))&0xFF,true)
+#define load_wyde(val,addr) (ll=mem_find(addr),(val)->h=0,(val)->l=(ll->tet>>(16*(1-((addr).l&1))))&0xFFFF,true)
+#define load_byte(val,addr) (ll=mem_find(addr),(val)->h=0,(val)->l=(ll->tet>>(8*(3-((addr).l&3))))&0xFF,true)
 
 #define store_octa_uncached(val,addr) store_octa(val,addr) 
 #define load_octa_uncached(val,addr) load_octa(val,addr)
@@ -65,14 +63,26 @@ extern int mmix_fputc(int c, FILE *f);
 
 #define MMIX_USAGE if (!*cur_arg) scan_option("?",true) /* exit with usage note */
 
-#define  MMIX_BREAK_LOOP false
+/* give a condition to break from the inner loop */
+#define MMIX_BREAK_LOOP false
 
-#define  MMIX_BOOT false
+/* give a condition to test for a reboot inside the inner loop */
+#define MMIX_REBOOT false
+
+/* define this to get the real TRAP implementation not the MMIXWARE fake TRAPS */
+#undef MMIX_TRAP
 
 #define MMIX_END halted
 
+#define MMIX_EXIT(i) exit(i)
+
+/* this is the error exit function */
+#define panic(m) (fprintf(stderr,"Panic: %s!\n",m), MMIX_EXIT(-1))
+
+#define MMIX_OPTION_STRING
+
 /* define this if you need the tetra inside the mem_node */
-#define MEM_NODE_TET tetra tet; /* the tetrabyte of simulated memory */
+#define MMIX_MEM_TET tetra tet; /* the tetrabyte of simulated memory */
 
 #define write_all_data_cache()
 #define clear_all_instruction_cache()
@@ -85,14 +95,6 @@ extern int mmix_fputc(int c, FILE *f);
 #define store_data_cache(w,xx)
 #define delete_data_cache(w,xx)
 #define delete_instruction_cache(w,xx)
-
-// do we need this always ?
-//include <setjmp.h>
-//include "mmixlib.h"
-
-//extern int ybyte2file_no[256]; /* mapping internal to external files */
-//define YBYTE2FILENO(ybyte) ybyte2file_no[ybyte]
-//define NAME2FILENO(name,ybyte) (ybyte2file_no[ybyte]=filename2file(name,ybyte))
 
 #include <time.h>
 #include "libtype.h"

@@ -9,10 +9,8 @@ to declare the extern library interface.
 @<Preprocessor definitions@>=
 @y
 @<Sub...@>=
-#ifdef MMIXLIB
 #include "mmixlib.h"
 #include "libname.h"
-#endif
 
 @ @<Global...@>=
 static jmp_buf error_exit;
@@ -23,7 +21,9 @@ static jmp_buf error_exit;
 extern int mmix_printf(char *format,...);
 #define printf(...) mmix_printf(__VA_ARGS__)
 #endif
+#ifdef WIN32
 #pragma warning(disable : 4996)
+#endif
 #define _MMIXAL_
 @z
 
@@ -208,20 +208,78 @@ static tetra z,y,x,yz,xyz; /* pieces for assembly */
 The main() program becomes mmixal().
 
 @x
+@c
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <time.h>
+@#
+@<Preprocessor definitions@>@;
+@<Type definitions@>@;
+@<Global variables@>@;
+@<Subroutines@>@;
+@#
 int main(argc,argv)
   int argc;@+
   char *argv[];
-@y
-int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option)
-@z
-
-There is no commandline to process,
-instead we handle the function parameters and 
-install the return point for 
-a global error exit. Further, we have to initialize global variables.
-@x
+{
+  register int j,k; /* all-purpose integers */
+  @<Local variables@>;
   @<Process the command line@>;
+  @<Initialize everything@>;
+  while(1) {
+    @<Get the next line of input text, or |break| if the input has ended@>;
+    while(1) {
+      @<Process the next \MMIXAL\ instruction or comment@>;
+      if (!*buf_ptr) break;
+    }
+    if (listing_file) {
+      if (listing_bits) listing_clear();
+      else if (!line_listed) flush_listing_line("                   ");
+    }
+  }
+  @<Finish the assembly@>;
+}
 @y
+@c
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <time.h>
+@#
+@<Preprocessor definitions@>@;
+@<Type definitions@>@;
+@#
+int main(argc,argv)
+  int argc;@+
+  char *argv[];
+{
+  register int j,k; /* all-purpose integers */
+  @<Local variables@>;
+  @<Process the command line@>;
+  return mmixal(mms_name, mmo_name, mml_name, x_option, b_option);
+}
+
+@ @(libmmixal.c@>=
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <time.h>
+@#
+@h
+@<Preprocessor definitions@>@;
+@<Type definitions@>@;
+@<Global variables@>@;
+@<Subroutines@>@;
+@#
+int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option)
+{
+  register int j,k; /* all-purpose integers */
+  @<Local variables@>;
+  /* instead of processing the commandline */
   err_count=setjmp(error_exit);
   if (err_count!=0){
    prune(trie_root);
@@ -257,6 +315,20 @@ a global error exit. Further, we have to initialize global variables.
   }
   greg= 255;
   lreg= 32;
+  @<Initialize everything@>;
+  while(1) {
+    @<Get the next line of input text, or |break| if the input has ended@>;
+    while(1) {
+      @<Process the next \MMIXAL\ instruction or comment@>;
+      if (!*buf_ptr) break;
+    }
+    if (listing_file) {
+      if (listing_bits) listing_clear();
+      else if (!line_listed) flush_listing_line("                   ");
+    }
+  }
+  @<Finish the assembly@>;
+}
 @z
 
 We assign the source file to filename[0]
@@ -269,8 +341,6 @@ filename[0]=src_file_name;
 file_no[0]=filename2file(src_file_name,0);
 filename_count=1;
 @z
-
-
 
 We end with return instead of exit.
 

@@ -56,7 +56,7 @@ The tet field of the mem_tetra may be eliminated.
 @x
   tetra tet; /* the tetrabyte of simulated memory */
 @y
-  MEM_NODE_TET
+  MMIX_MEM_TET
 @z
 
 @x
@@ -106,6 +106,8 @@ mmo_file=fopen(mmo_file_name,"rb");
 @<Load object file@>=
 mmo_file=fopen(mmo_file_name,"rb");
 @z
+
+This is simpler and uses the predefined panic subroutine.
 
 @x
     fprintf(stderr,"Can't open the object file %s or %s!\n",
@@ -263,23 +265,12 @@ Now we handle new files.
    if (buf[0]==mmo_esc) {
 @z
 
-
-@x
-@ Since a chunk of memory holds 512 tetrabytes, the |ll| pointer in the
-following loop stays in the same chunk (namely, the first chunk
+We load the postamble into the beginning
 of segment~3, also known as \.{Stack\_Segment}).
-@:Stack_Segment}\.{Stack\_Segment@>
-@:Pool_Segment}\.{Pool\_Segment@>
-@y
-@ We load the postamble into the beginning
-of segment~3, also known as \.{Stack\_Segment}).
-@:Stack_Segment}\.{Stack\_Segment@>
-@:Pool_Segment}\.{Pool\_Segment@>
 The stack segment is set up to be used with an unsave instruction.
 On the stack, we have, the local registers (argc and argv) and the value of rL, then the global 
 registers and the special registers rB, rD, rE, rH, rJ, rM, rR, rP, rW, rX, rY, and rZ,
 followed by rG and rA packed into eight byte.
-@z
 
 @x
 @<Load the postamble@>=
@@ -315,10 +306,18 @@ g[255]=incr(aux,12*8); /* we will \.{UNSAVE} from here, to get going */
     if (!store_octa(x,aux))
        panic("Unable to store mmo file to RAM");
   }
+  aux=incr(aux,12*8); /* we can |UNSAVE| from here, to get going */
+#ifdef MMIX_BOOT
   g[rWW] = x;  /* last octa stored is address of \.{Main} */
+  g[rBB] = aux;
+  g[rXX].h = 0; g[rXX].l = ((tetra)UNSAVE<<24)+255; /* \.{UNSAVE} \$255 */
+  rzz = 1;
+#else
+  inst_ptr = x;
+  g[255] = aux;
+  rzz = 0;  /* pretend \.{RESUME} 0 */
+#endif
 //  if (interacting) set_break(x,exec_bit);
-  g[rXX].h = 0; g[rXX].l = 0xFB0000FF; /* |UNSAVE| \$255 */
-  g[rBB]=aux=incr(aux,12*8); /* we can |UNSAVE| from here, to get going */
   x.h=G<<24; x.l=0 /* rA */; 
   if (!store_octa(x,aux))
      panic("Unable to store mmo file to RAM");
@@ -326,7 +325,7 @@ g[255]=incr(aux,12*8); /* we will \.{UNSAVE} from here, to get going */
 }
 @z
 
-Because mmo files have there own notion of
+Because mmo files have their own notion of
 file numbers, we have to map mmo file numbers
 to file numbers used in mem and in file_nodes.
 
@@ -394,10 +393,9 @@ void print_line(int k)
 @x
 @<Sub...@>=
 void show_line @,@,@[ARGS((void))@];@+@t}\6{@>
-void show_line()
 @y
 @(libshowline.c@>=
-void show_line(void)
+void show_line @,@,@[ARGS((void))@];@+@t}\6{@>
 @z
 
 @x
@@ -411,6 +409,8 @@ void print_freqs @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
 
 void print_freqs @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
 @z
+
+We need ll as a local variable.
 
 @x
   octa cur_loc;
@@ -490,14 +490,6 @@ bool trace_once=false;
 bool rw_break=false;
 octa rOlimit={-1,-1}; /* tracing and break only if g[rO]<=rOlimit */
 bool interact_after_resume = false;
-#ifdef MMIXLIB
-extern int port; /* on which port to connect to the bus */
-extern char *host; /* on which host to connect to the bus */
-#else
-char localhost[]="localhost";
-int port=9002; /* on which port to connect to the bus */
-char *host=localhost; /* on which host to connect to the bus */
-#endif
 @z
 
 We make some more variables global.
@@ -541,12 +533,12 @@ register char *p; /* current place in a string */
 @ @<Fetch the next instruction@>=
 { loc=inst_ptr;
   ll=mem_find(loc);
+  inst=SWYM<<24; /* default SWYM */
   cur_file=ll->file_no;
   cur_line=ll->line_no;
   ll->freq++;
   if (ll->bkpt&exec_bit) breakpoint=true;
   tracing=breakpoint||(ll->bkpt&trace_bit)||(ll->freq<=trace_threshold);
-  inst=SWYM<<24; /* default SWYM */
   @<Check for security violation@>
   if(!load_instruction(&inst,loc)) 
     goto page_fault;
@@ -556,22 +548,23 @@ register char *p; /* current place in a string */
 }
 @z
 
-We change how to display certein instructions.
+We change how to display certain instructions.
 
 @x
 {"RESUME",0x00,0,0,5,"{%#b} -> %#z"},@|
-{"SAVE",0x20,0,20,1,"%l = %#x"},@|
-{"UNSAVE",0x82,0,20,1,"%#z: rG=%x, ..., rL=%a"},@|
+@y
+{"RESUME",0x00,0,0,5,"{%#b}, $255 = %x, -> %#z"},@|
+@z
+
+@x
 {"SYNC",0x01,0,0,1,""},@|
 {"SWYM",0x00,0,0,1,""},@|
 @y
-{"RESUME",0x00,0,0,5,"{%#b}, $255 = %x, -> %#z"},@|
-{"SAVE",0x20,0,20,1,"%l = %#x"},@|
-{"UNSAVE",0x82,0,20,1,"%#z: rG=%x, ..., rL=%a"},@|
 {"SYNC",0x01,0,0,1,"%z"},@|
 {"SWYM",0x01,0,0,1,"%r"},@|
 @z
 
+L,G, and O are made global.
 
 @x
 @ @<Local...@>=
@@ -580,6 +573,7 @@ register int G,L,O; /* accessible copies of key registers */
 @ @<Glob...@>=
 int G=255,L=0,O=0; /* accessible copies of key registers */
 @z
+
 
 Initialization needs to be done at each reboot.
 
@@ -622,6 +616,11 @@ memset(l,0,lring_size*sizeof(octa));
 memset(g,0,sizeof(g));
 L=O=S=0;
 G=g[rG].l=255;
+#if MMIX_BOOT
+g[rK] = zero_octa;
+#else
+g[rK] = neg_one;
+#endif
 g[rN].h=(VERSION<<24)+(SUBVERSION<<16)+(SUBSUBVERSION<<8);
 g[rN].l=ABSTIME; /* see comment and warning above */
 g[rT].h=0x80000000;g[rT].l=0x00000000;
@@ -760,15 +759,28 @@ int register_truth @,@,@[ARGS((octa,mmix_opcode))@];@+@t}\6{@>
 
 
 @x
+case LDB: case LDBI: case LDBU: case LDBUI:@/
+ i=56;@+j=(w.l&0x3)<<3; goto fin_ld;
+case LDW: case LDWI: case LDWU: case LDWUI:@/
+ i=48;@+j=(w.l&0x2)<<3; goto fin_ld;
+case LDT: case LDTI: case LDTU: case LDTUI:@/
+ i=32;@+j=0;@+ goto fin_ld;
+case LDHT: case LDHTI: i=j=0;
 fin_ld: ll=mem_find(w);@+test_load_bkpt(ll);
  x.h=ll->tet;
  x=shift_right(shift_left(x,j),i,op&0x2);
 check_ld:@+if (w.h&sign_bit) goto privileged_inst; 
 @y
+case LDB: case LDBI: case LDBU: case LDBUI:@/
+ i=56;@+j=56;@+if(!load_byte(&x,w)) goto page_fault; goto fin_ld;
+case LDW: case LDWI: case LDWU: case LDWUI:@/
+ i=48;@+j=48;@+if(!load_wyde(&x,w)) goto page_fault; goto fin_ld;
+case LDT: case LDTI: case LDTU: case LDTUI:@/
+ i=32;@+j=32;@+if(!load_tetra(&x,w)) goto page_fault; goto fin_ld;
+case LDHT: case LDHTI: i=j=0;@+if(!load_tetra(&x,w)) goto page_fault;
+x.h=x.l;x.l=0;
 fin_ld: ll=mem_find(w);@+test_load_bkpt(ll);
- if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
- if (!load_tetra(&x,w)) goto page_fault;
- x=shift_right(shift_left(x,j+32),i,op&0x2);
+ if (op&0x2) x=shift_right(shift_left(x,i),i,op&0x2);
 check_ld:@+ if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
  goto store_x;
 page_fault:
@@ -794,17 +806,14 @@ case LDSF: case LDSFI: ll=mem_find(w);@+test_load_bkpt(ll);
 case LDO: case LDOI: case LDOU: case LDOUI: 
  w.l&=-8;@+ ll=mem_find(w);
  test_load_bkpt(ll);@+test_load_bkpt(ll+1);
- if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
  if (!load_octa(&x,w)) goto page_fault;
  goto check_ld;
 case LDUNC: case LDUNCI:
  w.l&=-8;@+ ll=mem_find(w);
  test_load_bkpt(ll);@+test_load_bkpt(ll+1);
- if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
  if (!load_octa_uncached(&x,w)) goto page_fault;
  goto check_ld;
 case LDSF: case LDSFI: ll=mem_find(w);@+test_load_bkpt(ll);
- if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
  if (!load_tetra(&x,w)) goto page_fault;
  x=load_sf(x.l);@+ goto check_ld;
 @z
@@ -813,8 +822,34 @@ case LDSF: case LDSFI: ll=mem_find(w);@+test_load_bkpt(ll);
 @x
 case STB: case STBI: case STBU: case STBUI:@/
  i=56;@+j=(w.l&0x3)<<3; goto fin_pst;
+@y
+case STB: case STBI: case STBU: case STBUI:@/
+ if ((op&0x2)==0) {
+   a=shift_right(shift_left(b,56),56,0);
+   if (a.h!=b.h || a.l!=b.l) exc|=V_BIT;
+ }
+ if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
+ if (!store_byte(b,w)) goto page_fault;
+ ll=mem_find(w); test_store_bkpt(ll);
+ break;
+@z
+
+@x
 case STW: case STWI: case STWU: case STWUI:@/
  i=48;@+j=(w.l&0x2)<<3; goto fin_pst;
+@y
+case STW: case STWI: case STWU: case STWUI:@/
+ if ((op&0x2)==0) {
+   a=shift_right(shift_left(b,48),48,0);
+   if (a.h!=b.h || a.l!=b.l) exc|=V_BIT;
+ }
+ if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
+ if (!store_wyde(b,w)) goto page_fault;
+ ll=mem_find(w); test_store_bkpt(ll);
+ break;
+@z
+
+@x
 case STT: case STTI: case STTU: case STTUI:@/
  i=32;@+j=0;
 fin_pst: ll=mem_find(w);
@@ -824,14 +859,45 @@ fin_pst: ll=mem_find(w);
  }
  ll->tet^=(ll->tet^(b.l<<(i-32-j))) & ((((tetra)-1)<<(i-32))>>j);
  goto fin_st;
+@y
+case STT: case STTI: case STTU: case STTUI:@/
+ if ((op&0x2)==0) {
+   a=shift_right(shift_left(b,32),32,0);
+   if (a.h!=b.h || a.l!=b.l) exc|=V_BIT;
+ }
+fin_pst:
+ if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
+ if (!store_tetra(b,w)) goto page_fault;
+ ll=mem_find(w); test_store_bkpt(ll);
+ break;
+@z
+
+
+@x
 case STSF: case STSFI: ll=mem_find(w);
  ll->tet=store_sf(b);@+exc=exceptions;
  goto fin_st;
+@y
+case STSF: case STSFI: 
+ a.l=b.l= store_sf(b);@+exc=exceptions;
+ a.h=b.h=0;
+ goto fin_pst;
+@z
+
+@x
 case STHT: case STHTI: ll=mem_find(w);@+ ll->tet=b.h;
 fin_st: test_store_bkpt(ll);
  w.l&=-8;@+ll=mem_find(w);
  a.h=ll->tet;@+ a.l=(ll+1)->tet; /* for trace output */
  goto check_st; 
+@y
+case STHT: case STHTI: 
+  a.l=b.l=b.h;
+  b.h=a.h=0;
+  goto fin_pst;
+@z
+
+@x
 case STCO: case STCOI: b.l=xx;
 case STO: case STOI: case STOU: case STOUI: case STUNC: case STUNCI:
  w.l&=-8;@+ll=mem_find(w);
@@ -840,39 +906,15 @@ case STO: case STOI: case STOU: case STOUI: case STUNC: case STUNCI:
 check_st:@+if (w.h&sign_bit) goto privileged_inst;
  break;
 @y
-case STB: case STBI: case STBU: case STBUI:@/
- i=56;@+j=1; goto fin_pst;
-case STW: case STWI: case STWU: case STWUI:@/
- i=48;@+j=2; goto fin_pst;
-case STT: case STTI: case STTU: case STTUI:@/
- i=32;@+j=4; goto fin_pst;
-fin_pst: 
- if ((op&0x2)==0) {
-   a=shift_right(shift_left(b,i),i,0);
-   if (a.h!=b.h || a.l!=b.l) exc|=V_BIT;
- }
-fin_st:@+  if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
- if (j==8 && !store_octa(b,w)) goto page_fault;
- if (j==4 && !store_tetra(b,w)) goto page_fault;
- if (j==2 && !store_wyde(b,w)) goto page_fault;
- if (j==1 && !store_byte(b,w)) goto page_fault;
- ll=mem_find(w); test_store_bkpt(ll);
- if(j>4) test_store_bkpt(ll+1);
+case STCO: case STCOI: b.l=xx;
+case STO: case STOI: case STOU: case STOUI:
+ w.l&=-8;
+ if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
+ if (!store_octa(b,w)) goto page_fault;
+ ll=mem_find(w); test_store_bkpt(ll);test_store_bkpt(ll+1);
  break;
-case STSF: case STSFI: 
- b.l = store_sf(b);@+exc=exceptions;
- j=4;
- goto fin_st;
-case STHT: case STHTI: 
-  b.l=b.h;
-  j=4;
-  goto fin_st;
-case STCO: case STCOI: b.h=0; b.l=xx;
-case STO: case STOI: case STOU: case STOUI: 
- j = 8;w.l&=-8;
- goto fin_st;
 case STUNC: case STUNCI:
- j = 8;w.l&=-8;
+ w.l&=-8;
  if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
  if (!store_octa_uncached(b,w)) goto page_fault;
  ll=mem_find(w); test_store_bkpt(ll);test_store_bkpt(ll+1);
@@ -1203,45 +1245,17 @@ break;
 @z
 
 @x
-The |TRAP| instruction is not simulated, except for the system calls
-mentioned in the introduction.
-
-@<Cases for ind...@>=
-case TRIP: exc|=H_BIT;@+break;
 case TRAP:@+if (xx!=0 || yy>max_sys_call) goto privileged_inst;
- strcpy(rhs,trap_format[yy]);
- g[rWW]=inst_ptr;
- g[rXX].h=sign_bit, g[rXX].l=inst;
- g[rYY]=y, g[rZZ]=z;
- z.h=0, z.l=zz;
- a=incr(b,8);
- @<Prepare memory arguments $|ma|={\rm M}[a]$ and $|mb|={\rm M}[b]$ if needed@>;
- switch (yy) {
-case Halt: @<Either halt or print warning@>;@+g[rBB]=g[255];@+break;
-case Fopen: g[rBB]=mmix_fopen((unsigned char)zz,mb,ma);@+break;
-case Fclose: g[rBB]=mmix_fclose((unsigned char)zz);@+break;
-case Fread: g[rBB]=mmix_fread((unsigned char)zz,mb,ma);@+break;
-case Fgets: g[rBB]=mmix_fgets((unsigned char)zz,mb,ma);@+break;
-case Fgetws: g[rBB]=mmix_fgetws((unsigned char)zz,mb,ma);@+break;
-case Fwrite: g[rBB]=mmix_fwrite((unsigned char)zz,mb,ma);@+break;
-case Fputs: g[rBB]=mmix_fputs((unsigned char)zz,b);@+break;
-case Fputws: g[rBB]=mmix_fputws((unsigned char)zz,b);@+break;
-case Fseek: g[rBB]=mmix_fseek((unsigned char)zz,b);@+break;
-case Ftell: g[rBB]=mmix_ftell((unsigned char)zz);@+break;
-}
- x=g[255]=g[rBB];@+break;
-
-@ @<Either halt or print warning@>=
-if (!zz) halted=breakpoint=true;
-else if (zz==1) {
-  if (loc.h || loc.l>=0x90) goto privileged_inst;
-  print_trip_warning(loc.l>>4,incr(g[rW],-4));
-}@+else goto privileged_inst;
 @y
-The |TRAP| instruction prints nicely for some system calls.
+#ifndef MMIX_TRAP
+case TRAP:@+if (xx!=0 || yy>max_sys_call) goto privileged_inst;
+@z
 
-@<Cases for ind...@>=
-case TRIP: exc|=H_BIT;@+break;
+@x
+ x=g[255]=g[rBB];@+break;
+@y
+ x=g[255]=g[rBB];@+break;
+#else
 case TRAP:@+if (xx==0 && yy<=max_sys_call) 
       { strcpy(rhs,trap_format[yy]);
         a=incr(b,8);
@@ -1253,6 +1267,7 @@ case TRAP:@+if (xx==0 && yy<=max_sys_call)
  @<Initiate a trap interrupt@>
  inst_ptr=y=g[rT];
  break;
+#endif
 @z
 
 
@@ -1268,6 +1283,7 @@ case TRAP:@+if (xx==0 && yy<=max_sys_call)
 "$255 = Fseek(%!z,%b) = %x",
 "$255 = Ftell(%!z) = %x"};
 @y
+#ifdef MMIX_TRAP
 "$255 = Fopen(%!z,M8[%#b]=%#q,M8[%#a]=%p) -> %#y",
 "$255 = Fclose(%!z) -> %#y",
 "$255 = Fread(%!z,M8[%#b]=%#q,M8[%#a]=%p) -> %#y",
@@ -1278,6 +1294,18 @@ case TRAP:@+if (xx==0 && yy<=max_sys_call)
 "$255 = Fputws(%!z,%#b) -> %#y",
 "$255 = Fseek(%!z,%b) -> %#y",
 "$255 = Ftell(%!z) -> %#y"};
+#else
+"$255 = Fopen(%!z,M8[%#b]=%#q,M8[%#a]=%p) = %x",
+"$255 = Fclose(%!z) = %x",
+"$255 = Fread(%!z,M8[%#b]=%#q,M8[%#a]=%p) = %x",
+"$255 = Fgets(%!z,M8[%#b]=%#q,M8[%#a]=%p) = %x",
+"$255 = Fgetws(%!z,M8[%#b]=%#q,M8[%#a]=%p) = %x",
+"$255 = Fwrite(%!z,M8[%#b]=%#q,M8[%#a]=%p) = %x",
+"$255 = Fputs(%!z,%#b) = %x",
+"$255 = Fputws(%!z,%#b) = %x",
+"$255 = Fseek(%!z,%b) = %x",
+"$255 = Ftell(%!z) = %x"};
+#endif
 @z
 
 
@@ -1305,20 +1333,8 @@ Here we need only declare those subroutines, and write three primitive
 interfaces on which they depend.
 
 @ @<Glob...@>=
-extern void mmix_io_init @,@,@[ARGS((void))@];
-extern octa mmix_fopen @,@,@[ARGS((unsigned char,octa,octa))@];
-extern octa mmix_fclose @,@,@[ARGS((unsigned char))@];
-extern octa mmix_fread @,@,@[ARGS((unsigned char,octa,octa))@];
-extern octa mmix_fgets @,@,@[ARGS((unsigned char,octa,octa))@];
-extern octa mmix_fgetws @,@,@[ARGS((unsigned char,octa,octa))@];
-extern octa mmix_fwrite @,@,@[ARGS((unsigned char,octa,octa))@];
-extern octa mmix_fputs @,@,@[ARGS((unsigned char,octa))@];
-extern octa mmix_fputws @,@,@[ARGS((unsigned char,octa))@];
-extern octa mmix_fseek @,@,@[ARGS((unsigned char,octa))@];
-extern octa mmix_ftell @,@,@[ARGS((unsigned char))@];
-extern void print_trip_warning @,@,@[ARGS((int,octa))@];
-extern void mmix_fake_stdin @,@,@[ARGS((FILE*))@];
 @y
+@ @(mmix-io.h@>=
 @z
 
 @x
@@ -1500,6 +1516,23 @@ void mmputchars(unsigned char *buf,int size,octa addr)
   m+=8,a=incr(a,8);
 }
 @z
+
+The next function is used for mmixware ftraps
+
+@x
+@<Sub...@>=
+char stdin_chr @,@,@[ARGS((void))@];@+@t}\6{@>
+@y
+@(libstdin.c@>=
+#include <stdlib.h>
+#include <stdio.h>
+#include "libconfig.h"
+
+char stdin_chr @,@,@[ARGS((void))@];@+@t}\6{@>
+@z
+
+
+
 
 @x
 @ We are finally ready for the last case.
@@ -1840,10 +1873,16 @@ a working simulator to separate files of a library.
 #include <stdlib.h>
 #include <stdio.h>
 #include "libconfig.h"
+#ifndef MMIX_TRAP
+#include "mmix-io.h"
+#endif
 
 int mmix_lib_initialize(void)
 {
    @<Set up persistent data@>;
+#ifndef MMIX_TRAP
+   mmix_io_init();
+#endif
    return 0;
 }
 
@@ -1863,21 +1902,35 @@ void catchint(int n);
 #endif
 
 int mmix_initialize(void)
-{  @<Initialize everything@>;
+{ 
+  @<Initialize everything@>;
   cur_seg.h=cur_seg.l=0; /* the Text segment is current */
   return 0;
 }
 
 @ @(libboot.c@>=
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include "abstime.h"
 #include "libconfig.h"
 #include "libarith.h"
 
+extern void dump(mem_node *p);
+extern void dump_tet(tetra t);
+
 void mmix_boot(void)
-{ MMIX_PREBOOT 
+{ 
+  MMIX_PREBOOT 
   @<Boot the machine@>;
+#ifdef MMIX_BOOT
+  loc.h=inst_ptr.h=0x80000000;
+  loc.l=inst_ptr.l=0x00000000;
+  g[rJ].h=g[rJ].l =0xFFFFFFFF;
+  resuming=false;
+#else
+  @<Get ready to \.{UNSAVE} the initial context@>
+#endif
 }
 
 
@@ -1966,6 +2019,7 @@ page_fault:
 #endif
 #include "libconfig.h"
 #include "libarith.h"
+#include "mmix-io.h"
 
 static bool interact_after_resume= false;
 
@@ -2023,6 +2077,11 @@ int mmix_finalize(void)
 int mmix_lib_finalize(void)
 { return 0;
 }
+
+@ @(libglobals.c@>=
+#include <stdio.h>
+#include "libconfig.h"
+@<Global variables@>@;
 
 @ @c
 #include <stdio.h>
@@ -2084,7 +2143,7 @@ boot:
     } while (resuming || (!interrupt && !breakpoint));
     if (interact_after_break) 
        interacting=true, interact_after_break=false;
-    if (MMIX_BOOT)
+    if (MMIX_REBOOT)
     { breakpoint=true; 
       goto boot;
     }
@@ -2116,9 +2175,12 @@ argc -= (int)(cur_arg-argv); /* this is the |argc| of the user program */
 void scan_option @,@,@[ARGS((char*,bool))@];@+@t}\6{@>
 @y
 @(libsoption.c@>=
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include "libconfig.h"
+#include "mmix-io.h"
+
 void scan_option @,@,@[ARGS((char*,bool))@];@+@t}\6{@>
 @z
 
@@ -2135,7 +2197,7 @@ we need to replace all exits.
 @x
     exit(-1);
 @y
-    mmix_exit(-1);
+    MMIX_EXIT(-1);
 @z    
 
 @x
@@ -2162,13 +2224,6 @@ MMIX_INTERACT_STRING
 "T         set current segment to Text_Segment\n",@|
 
 @z
-
-@x
-else mmix_fake_stdin(fake_stdin);
-@y
-else fprintf(stderr,"Sorry, I can't fake stdin\n");
-@z
-
 
 @x
 @ @<Initialize...@>=
@@ -2332,32 +2387,24 @@ if (argc>0)
 }
 @z
 
+we do not support user libraries at #f0
+
 @x
-@ @<Get ready to \.{UNSAVE} the initial context@>=
 x.h=0, x.l=0xf0;
 ll=mem_find(x);
 if (ll->tet) inst_ptr=x;
 @^subroutine library initialization@>
 @^initialization of a user program@>
-resuming=true;
-rop=RESUME_AGAIN;
-g[rX].l=((tetra)UNSAVE<<24)+255;
-if (dump_file) {
-  x.l=1;
-  dump(mem_root);
-  dump_tet(0),dump_tet(0);
-  exit(0);
-}
 @y
-@ We make sure that the processor boots properly.
-A user porgram (if loaded) can be started with UNSAVE \$255.
-
-@<Boot the machine@>=
-loc.h=inst_ptr.h=0x80000000;
-loc.l=inst_ptr.l=0x00000000;
-g[rJ].h=g[rJ].l =0xFFFFFFFF;
-resuming=false;
 @z
+
+
+@x
+  exit(0);
+@y
+  MMIX_EXIT(0);
+@z
+
 
 @x
 @<Sub...@>=

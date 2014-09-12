@@ -1,8 +1,11 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "mmix-internals.h"
-#include "vmb.h"
-#include "mmixlib.h"
+#include "libconfig.h"
+#include "libbase.h"
+
+
+
+
 
 static void free_sym(sym_node *sym)
 { if (((unsigned long long int)sym&~0x3)==0) return;
