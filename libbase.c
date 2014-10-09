@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "libconfig.h"
+#include "libtype.h"
+#include "libglobals.h"
 #include "libbase.h"
 
 

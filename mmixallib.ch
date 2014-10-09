@@ -5,22 +5,22 @@ about deprecated functions, like strcpy or sprintf, and
 include mmixlib.h at the start of the sybroutines 
 to declare the extern library interface.
 
+We prepare for the elimination
+of the exit() function, which must be replaced by a return from
+the subroutine.
+
+
 @x
 @<Preprocessor definitions@>=
 @y
 @<Sub...@>=
 #include "mmixlib.h"
-#include "libname.h"
 
 @ @<Global...@>=
-static jmp_buf error_exit;
+#include <setjmp.h>
+jmp_buf mmixal_exit;
 
 @ @<Preprocessor definitions@>=
-#include <setjmp.h>
-#ifdef MMIX_PRINT
-extern int mmix_printf(char *format,...);
-#define printf(...) mmix_printf(__VA_ARGS__)
-#endif
 #ifdef WIN32
 #pragma warning(disable : 4996)
 #endif
@@ -34,33 +34,48 @@ We change error messages that handle errors in the command line
     fprintf(stderr,
        "(say `-b <number>' to increase the length of my input buffer)\n");
 @y
-    err("*use the Options dialog to increase the length of my input buffer");
+    MMXIAL_LINE_TRUNCATED
 @z
 
-Besides filenames, we need to keep track
-of external file numbers.
+The filenames in mmixal are considered local.
 
 @x
 Char *filename[257];
 @y
-Char *filename[257];
-static int file_no[257];
+static Char *filename[257];
 @z
 
-Whenever we enter a new filename, we look up
-the external file number for it.
+The error reporting goes into a separate file, because we might want
+to change it.
 
 @x
-        filename_count++;
+@d err(m) {@+report_error(m);@+if (m[0]!='*') goto bypass;@+}
+@d derr(m,p) {@+sprintf(err_buf,m,p);
+   report_error(err_buf);@+if (err_buf[0]!='*') goto bypass;@+}
+@d dderr(m,p,q) {@+sprintf(err_buf,m,p,q);
+   report_error(err_buf);@+if (err_buf[0]!='*') goto bypass;@+}
+@d panic(m) {@+sprintf(err_buf,"!%s",m);@+report_error(err_buf);@+}
+@d dpanic(m,p) {@+err_buf[0]='!';@+sprintf(err_buf+1,m,p);@+
+                                          report_error(err_buf);@+}
 @y
-        file_no[filename_count]=filename2file(filename[filename_count],filename_count);
-        filename_count++;
+@d err(m) {@+report_error(m,filename[cur_file],line_no);@+if (m[0]!='*') goto bypass;@+}
+@d derr(m,p) {@+sprintf(err_buf,m,p);
+   report_error(err_buf,filename[cur_file],line_no);@+if (err_buf[0]!='*') goto bypass;@+}
+@d dderr(m,p,q) {@+sprintf(err_buf,m,p,q);
+   report_error(err_buf,filename[cur_file],line_no);@+if (err_buf[0]!='*') goto bypass;@+}
+@d panic(m) {@+sprintf(err_buf,"!%s",m);@+report_error(err_buf,filename[cur_file],line_no);@+}
+@d dpanic(m,p) {@+err_buf[0]='!';@+sprintf(err_buf+1,m,p);@+
+                                          report_error(err_buf,filename[cur_file],line_no);@+}
 @z
 
 
-Next we change the way errors are reported:
-
 @x
+@<Sub...@>=
+void report_error @,@,@[ARGS((char*))@];@+@t}\6{@>
+void report_error(message)
+  char *message;
+{
+  if (!filename[cur_file]) filename[cur_file]="(nofile)";
   if (message[0]=='*')
     fprintf(stderr,"\"%s\", line %d warning: %s\n",
                  filename[cur_file],line_no,message+1);
@@ -72,35 +87,55 @@ Next we change the way errors are reported:
                  filename[cur_file],line_no,message);
     err_count++;
   }
-@y
-  if (message[0]=='*'){
-    mmixal_error(message+1,file_no[cur_file],line_no,1);
-    err_count+=0x1;
-    }
-  else if (message[0]=='!') {
-    mmixal_error(message+1,file_no[cur_file],line_no,-1);
-    err_count=-2;
+  if (listing_file) {
+    if (!line_listed) flush_listing_line("****************** ");
+    if (message[0]=='*') fprintf(listing_file,
+            "************ warning: %s\n",message+1);
+    else if (message[0]=='!') fprintf(listing_file,
+            "******** fatal error: %s!\n",message+1);
+    else fprintf(listing_file,
+            "********** error: %s!\n",message);
   }
-  else {
-    mmixal_error(message,file_no[cur_file],line_no,0);
-    err_count+=0x10000;
-  }
-@z                 
-
-
-The error exit is redirected using a longjmp.
-
-@x
   if (message[0]=='!') exit(-2);
+}
 @y
-  if (message[0]=='!') 
-    longjmp(error_exit,-2);
-@z
+@(libalerror.c@>=
+#include <stdlib.h>
+#include <stdio.h>
+#include <setjmp.h>
 
-@x
-int err_count; /* this many errors were found */
-@y
-int err_count; /* negativ for fatal erros else (erros<<16)+warnings */
+extern int err_count;
+extern FILE *listing_file;
+extern void flush_listing_line(char*line);
+typedef enum{false,true}bool;
+extern bool line_listed;
+extern jmp_buf mmixal_exit;
+
+void report_error(char *message,char *filename,int line_no)
+{
+  if (!filename) filename="(nofile)";
+  if (message[0]=='*')
+    fprintf(stderr,"\"%s\", line %d warning: %s\n",
+                 filename,line_no,message+1);
+  else if (message[0]=='!')
+    fprintf(stderr,"\"%s\", line %d fatal error: %s\n",
+                 filename,line_no,message+1);
+  else {
+    fprintf(stderr,"\"%s\", line %d: %s!\n",
+                 filename,line_no,message);
+    err_count++;
+  }
+  if (listing_file) {
+    if (!line_listed) flush_listing_line("****************** ");
+    if (message[0]=='*') fprintf(listing_file,
+            "************ warning: %s\n",message+1);
+    else if (message[0]=='!') fprintf(listing_file,
+            "******** fatal error: %s!\n",message+1);
+    else fprintf(listing_file,
+            "********** error: %s!\n",message);
+  }
+  if (message[0]=='!') longjmp(mmixal_exit,-2);
+}
 @z
 
 In the assemble subroutine, we have the
@@ -110,7 +145,7 @@ the association of lines and locations.
 @x
   for (j=0;j<k;j++) {
 @y
- add_line_loc(file_no[cur_file], line_no, cur_loc);
+ MMIXAL_LINE_LOC(cur_file, line_no, cur_loc);
  for (j=0;j<k;j++) {
 @z
 
@@ -166,11 +201,10 @@ Char *special_name[32]={"rB","rD","rE","rH","rJ","rM","rR","rBB",
  "rA","rF","rP","rW","rX","rY","rZ","rWW","rXX","rYY","rZZ"};
 @y
 extern Char *special_name[32];
-
 @z
 
 Errors generated at the end of the assembly should use the
-normal error reporting macros.
+normal error reporting function.
 
 @x
   fprintf(stderr,"undefined symbol: %s\n",sym_buf+1);
@@ -178,9 +212,7 @@ normal error reporting macros.
   err_count++;
 @y
   sprintf(err_buf,"undefined symbol: %s",sym_buf+1);
-  report_error(err_buf);
-@.undefined symbol@>
-  err_count+=0x10000;
+  report_error(err_buf,filename[cur_file],line_no);
 @z
 
 when a sym_node becomes DEFINED, we record file and line.
@@ -189,7 +221,7 @@ when a sym_node becomes DEFINED, we record file and line.
   @<Find the symbol table node, |pp|@>;
 @y
   @<Find the symbol table node, |pp|@>;
-  pp->file_no=file_no[cur_file];
+  pp->file_no=MMIX_FILE_NO(cur_file);
   pp->line_no=line_no;  
 @z
 
@@ -248,18 +280,28 @@ int main(argc,argv)
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
+#include "libconfig.h"
 @#
 @<Preprocessor definitions@>@;
 @<Type definitions@>@;
+extern int expanding;
+extern int buf_size;
+extern char*src_file_name;
+extern char obj_file_name[FILENAME_MAX+1];
+extern char listing_name[FILENAME_MAX+1];
+
+
+extern void report_error(char * message, char *filename, int line_no);
+extern int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option);
 @#
 int main(argc,argv)
   int argc;@+
   char *argv[];
 {
-  register int j,k; /* all-purpose integers */
-  @<Local variables@>;
+  register int j; /* all-purpose integers */
+
   @<Process the command line@>;
-  return mmixal(mms_name, mmo_name, mml_name, x_option, b_option);
+  return mmixal(src_file_name, obj_file_name, listing_name, expanding, buf_size);
 }
 
 @ @(libmmixal.c@>=
@@ -267,20 +309,25 @@ int main(argc,argv)
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include <time.h>
+#include <time.h> 
+#include "libconfig.h"
 @#
 @h
 @<Preprocessor definitions@>@;
 @<Type definitions@>@;
 @<Global variables@>@;
+
+extern void report_error(char * message, char *filename, int line_no);
+
 @<Subroutines@>@;
+
 @#
 int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option)
 {
   register int j,k; /* all-purpose integers */
   @<Local variables@>;
   /* instead of processing the commandline */
-  err_count=setjmp(error_exit);
+  err_count=setjmp(mmixal_exit);
   if (err_count!=0){
    prune(trie_root);
    goto clean_up;
@@ -331,17 +378,6 @@ int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_o
 }
 @z
 
-We assign the source file to filename[0]
-and set also file_no[0]
-@x
-filename[0]=src_file_name;
-filename_count=1;
-@y
-filename[0]=src_file_name;
-file_no[0]=filename2file(src_file_name,0);
-filename_count=1;
-@z
-
 We end with return instead of exit.
 
 @x
@@ -352,8 +388,9 @@ if (err_count) {
 exit(err_count);
 @y
   if (err_count>0){
-    sprintf(err_buf,"%d errors and %d warnings were found.",err_count>>16, err_count&0xFFFF);
-    report_error(err_buf);
+    if (err_count>1) sprintf(err_buf,"(%d errors were found.)",err_count);
+    else sprintf(err_buf,"(One error was found.)");
+    report_error(err_buf,filename[cur_file],line_no);
   }
 clean_up:
   if (listing_file!=NULL) 
@@ -388,7 +425,7 @@ clean_up:
   for (j=1;j<filename_count;j++)
   { free(filename[j]);
     filename[j]=NULL;
-	filename_passed[j]=0;
+    filename_passed[j]=0;
   }
   filename_count=0;
   
@@ -401,8 +438,7 @@ usual error reporting.
 @x
   err_count++,fprintf(stderr,"undefined local symbol %dF\n",j);
 @y
-  { err_count+=0x10000;
-    sprintf(err_buf,"undefined local symbol %dF\n",j);
-    report_error(err_buf);
+  { sprintf(err_buf,"undefined local symbol %dF",j);
+    report_error(err_buf,filename[cur_file],line_no);
   }
 @z

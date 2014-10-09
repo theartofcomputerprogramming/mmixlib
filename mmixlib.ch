@@ -19,6 +19,11 @@ void print_hex @,@,@[ARGS((octa))@];@+@t}\6{@>
 @ @(libprint.c@>=
 #include <stdio.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
+
 #include "libarith.h"
 
 void print_hex @,@,@[ARGS((octa))@];@+@t}\6{@>
@@ -26,7 +31,7 @@ void print_hex @,@,@[ARGS((octa))@];@+@t}\6{@>
 
 
 The external definitions of mmix-arith
-should also go int a header file.
+should also go into a header file.
 
 @x
 @<Sub...@>=
@@ -41,6 +46,7 @@ Fatal errors need to be handled but panic moves to libconfig.h
 @x
 @d panic(m) {@+fprintf(stderr,"Panic: %s!\n",m);@+exit(-2);@+}
 @y
+@d panic(m) {@+MMIX_ERROR("Panic: %s!\n",m);@+longjmp(mmix_exit,-2);@+}
 @z
 
 @x
@@ -67,6 +73,14 @@ mem_node* new_mem @,@,@[ARGS((void))@];@+@t}\6{@>
 #include <stdlib.h>
 #include <stdio.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
+
+
+#include <setjmp.h>
+extern jmp_buf mmix_exit;
 
 mem_node* new_mem @,@,@[ARGS((void))@];@+@t}\6{@>
 @z
@@ -138,7 +152,16 @@ void read_tet @,@,@[ARGS((void))@];@+@t}\6{@>
 #include <stdio.h>
 #include <string.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "libarith.h"
+#include "libname.h"
+
+#include <setjmp.h>
+extern jmp_buf mmix_exit;
+
 
 @<Loading subroutines@>@;
 
@@ -361,6 +384,13 @@ void make_map @,@,@[ARGS((void))@];@+@t}\6{@>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
+
+#include <setjmp.h>
+extern jmp_buf mmix_exit;
 
 void make_map @,@,@[ARGS((void))@];@+@t}\6{@>
 @z
@@ -405,6 +435,10 @@ void print_freqs @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
 @(libprofile.c@>=
 #include <stdio.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "libarith.h"
 
 void print_freqs @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
@@ -502,8 +536,8 @@ register tetra f; /* properties of the current |op| */
 @y
 @ @<Glob...@>=
 mmix_opcode op; /* operation code of the current instruction */
-tetra f; /* properties of the current |op| */
 int xx,yy,zz,yz; /* operand fields of the current instruction */
+tetra f; /* properties of the current |op| */
 
 @ @<Local...@>=
 @z
@@ -1363,6 +1397,10 @@ int mmgetchars(buf,size,addr,stop)
 @(libmmget.c@>=
 #include <stdio.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "libarith.h"
 
 int mmgetchars(buf,size,addr,stop)
@@ -1469,6 +1507,10 @@ into the simulated memory starting at address |addr|.
 @(libmmput.c@>=
 #include <stdio.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "libarith.h"
 
 void mmputchars(unsigned char *buf,int size,octa addr)
@@ -1527,6 +1569,13 @@ char stdin_chr @,@,@[ARGS((void))@];@+@t}\6{@>
 #include <stdlib.h>
 #include <stdio.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
+
+#include <setjmp.h>
+extern jmp_buf mmix_exit;
 
 char stdin_chr @,@,@[ARGS((void))@];@+@t}\6{@>
 @z
@@ -1790,6 +1839,10 @@ void trace_print @,@,@[ARGS((octa))@];@+@t}\6{@>
 @ @(libtrace.c@>=
 #include <stdio.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "libarith.h"
 
 static fmt_style style;
@@ -1818,6 +1871,10 @@ void show_stats @,@,@[ARGS((bool))@];@+@t}\6{@>
 @ @(libstats.c@>=
 #include <stdio.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "libarith.h"
 
 void show_stats @,@,@[ARGS((bool))@];@+@t}\6{@>
@@ -1873,6 +1930,11 @@ a working simulator to separate files of a library.
 #include <stdlib.h>
 #include <stdio.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
+
 #ifndef MMIX_TRAP
 #include "mmix-io.h"
 #endif
@@ -1891,6 +1953,10 @@ int mmix_lib_initialize(void)
 #include <stdio.h>
 #include <signal.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "libarith.h"
 
 #ifdef WIN32
@@ -1900,6 +1966,9 @@ BOOL CtrlHandler(DWORD fdwCtrlType);
 #else
 void catchint(int n);
 #endif
+
+#include <setjmp.h>
+extern jmp_buf mmix_exit;
 
 int mmix_initialize(void)
 { 
@@ -1912,10 +1981,16 @@ int mmix_initialize(void)
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <setjmp.h>
 #include "abstime.h"
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "libarith.h"
 
+extern jmp_buf mmix_exit;
 extern void dump(mem_node *p);
 extern void dump_tet(tetra t);
 
@@ -1953,6 +2028,10 @@ int mmix_load_file(char *mmo_file_name)
 #include <stdio.h>
 #include <string.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "libarith.h"
 
 int mmix_commandline(int argc, char *argv[])
@@ -1968,6 +2047,10 @@ int mmix_commandline(int argc, char *argv[])
 #include <string.h>
 #include <ctype.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "libarith.h"
 
 static octa scan_hex(char *s, octa offset);
@@ -1987,6 +2070,10 @@ end_simulation:
 #include <stdio.h>
 #include <string.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "libarith.h"
 
 int mmix_fetch_instruction(void)
@@ -2018,6 +2105,10 @@ page_fault:
 #include <unistd.h>
 #endif
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "libarith.h"
 #include "mmix-io.h"
 
@@ -2045,6 +2136,10 @@ void mmix_trace(void)
 @ @(libdtrap.c@>=
 #include <stdio.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 
 
 void mmix_dynamic_trap(void)
@@ -2064,6 +2159,10 @@ void mmix_profile(void)
 @ @(libfinal.c@>=
 #include <stdio.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 
 int mmix_finalize(void)
 { free_file_info();
@@ -2073,6 +2172,10 @@ int mmix_finalize(void)
 @ @(liblibfinal.c@>=
 #include <stdio.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 
 int mmix_lib_finalize(void)
 { return 0;
@@ -2081,6 +2184,11 @@ int mmix_lib_finalize(void)
 @ @(libglobals.c@>=
 #include <stdio.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
+
 @<Global variables@>@;
 
 @ @c
@@ -2092,8 +2200,12 @@ int mmix_lib_finalize(void)
 #include <setjmp.h>
 #include "abstime.h"
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 
-jmp_buf error_exit;
+jmp_buf mmix_exit;
 
 int main(argc,argv)
   int argc;
@@ -2103,7 +2215,7 @@ int main(argc,argv)
   int boot_argc;
   mmix_lib_initialize();
   g[255].h=0;
-  g[255].l=setjmp(error_exit);
+  g[255].l=setjmp(mmix_exit);
   if (g[255].l!=0)
    goto end_simulation;
   @<Process the command line@>;
@@ -2178,8 +2290,15 @@ void scan_option @,@,@[ARGS((char*,bool))@];@+@t}\6{@>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <setjmp.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "mmix-io.h"
+
+extern jmp_buf mmix_exit;
 
 void scan_option @,@,@[ARGS((char*,bool))@];@+@t}\6{@>
 @z
@@ -2197,7 +2316,7 @@ we need to replace all exits.
 @x
     exit(-1);
 @y
-    MMIX_EXIT(-1);
+    longjmp(mmix_exit,-1);
 @z    
 
 @x
@@ -2351,6 +2470,10 @@ void show_breaks @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
 #include <stdio.h>
 #include <string.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "libarith.h"
 
 void show_breaks @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
@@ -2402,7 +2525,7 @@ if (ll->tet) inst_ptr=x;
 @x
   exit(0);
 @y
-  MMIX_EXIT(0);
+  longjmp(mmix_exit,0);
 @z
 
 
@@ -2413,6 +2536,10 @@ void dump @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
 @(libdump.c@>=
 #include <stdio.h>
 #include "libconfig.h"
+#include <time.h>
+#include "libtype.h"
+#include "libglobals.h"
+#include "mmixlib.h"
 #include "libarith.h"
 
 void dump @,@,@[ARGS((mem_node*))@];@+@t}\6{@>

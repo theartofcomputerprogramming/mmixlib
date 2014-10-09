@@ -24,11 +24,6 @@ extern void show_breaks(mem_node *p);
 
 
 
-/* function to return a symbol table back to free storage */
-
-
-extern void mmix_exit(int returncode);
-
 /* functions provided by mmix-lib */
 extern int mmix_main(int argc, char *argv[],char *mmo_file_name);
 /* the mmix main program */
@@ -56,7 +51,7 @@ extern int mmix_perform_instruction(void);
 /* called to execute one instruction */
 extern void mmix_trace(void);
 /* tests for tracing and outputs a trace of the instruction */
-extern void mmix_exit(int returncode);
+/* extern void mmix_exit(int returncode); */
 /* call to cause a running mmix simulator to return*/
 extern void mmix_dynamic_trap(void);
 /* check for dynamic traps */
@@ -115,3 +110,12 @@ extern void add_line_loc(int file_no, int line_no, octa loc);
 /* report the association of a file/line with a location */
 
 extern int mmoimg_main(int argc, char *argv[]);
+
+/* global variables of mmixal */
+extern char *src_file_name; /* name of the \MMIXAL\ input file */
+extern char obj_file_name[FILENAME_MAX+1]; /* name of the binary output file */
+extern char listing_name[FILENAME_MAX+1]; /* name of the optional listing file */
+extern FILE *src_file, *obj_file, *listing_file;
+extern int expanding; /* are we expanding instructions when base address fail? */
+extern int buf_size; /* maximum number of characters per line of input */
+extern int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option);
