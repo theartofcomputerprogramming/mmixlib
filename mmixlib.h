@@ -61,7 +61,8 @@ extern int mmix_printf(char *format,...);
 /* printf replacement */
 extern int mmix_fputc(int c, FILE *f);
 /* fputc replacement */
-
+void mmix_stack_trace(char *format,...);
+/* function to do the stack trace */
 #if 0
 
 extern int cur_file; /* index of the current file in |filename| */

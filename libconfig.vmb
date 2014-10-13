@@ -8,7 +8,6 @@
 /* define this if you need a local copy of mem_tetra ll */
 #define MMIX_LOCAL_LL  /* mem_tetra *ll; current place in the simulated memory */
 
-
 #define MMIX_STO(val,addr) store_data(8,val,addr)
 #define MMIX_STT(val,addr) store_data(4,val,addr)
 #define MMIX_STW(val,addr) store_data(2,val,addr)
@@ -30,24 +29,39 @@
 #define	MMIX_DELAY(ms,d)  d = vmb_wait_for_event_timed(&vmb,ms)
 
 /* define this to check for external asynchronous ineterrupts*/
-#define MMIX_GET_INTERRUPT
+#define MMIX_GET_INTERRUPT  \
+if (vmb_get_interrupt(&vmb,&new_Q.h,&new_Q.l)==1) \
+  { g[rQ].h |= new_Q.h; g[rQ].l |= new_Q.l; }
 
 /* this code is executed when MMIX enters the handler for Ctrl-C */
-#define   MMIX_CTRL_HANDLER
+#define   MMIX_CTRL_HANDLER   vmb_cancel_wait_for_event(&vmb); show_operating_system=true;
 
-/* this code defines additional options */
-#define MMIX_OPTIONS  
 
-/* this defines new interactions for the user */
-#define MMIX_INTERACT_STRING 
+/* this code defines additional command line options */
+#define MMIX_OPTIONS  \
+ case 'B': \
+  { char *p; \
+    p = strchr(arg+1,':'); \
+    if (p==NULL) \
+    { host=localhost; \
+      port = atoi(arg+1); \
+    }    \
+    else \
+    { port = atoi(p+1); \
+      host = malloc(p+1-arg+1); \
+      if (host==NULL) panic("No room for hostname"); \
+      strncpy(host,arg+1,p-arg-1); \
+      host[p-arg-1]=0; \
+    } \
+  } \
+  return;  \
 
-/* this code defines the actions for the strings above */
-#define MMIX_INTERACT_ACTION
 
 /* if MMIX_BOOT is defined, mmis-sim will boot from addres #8000...0000
    otherwise it will resume at Main */
 #define MMIX_BOOT
 
+#define MMIX_PRINT
 
 #ifdef MMIX_PRINT
 extern int mmix_printf(char *format,...);
@@ -57,10 +71,8 @@ extern int mmix_fputc(int c, FILE *f);
 #define fputc(c,f) mmix_fputc(c,f)
 #endif
 
-#define MMIX_USAGE if (!*cur_arg) scan_option("?",true) /* exit with usage note */
-
-/* give a condition to break from the inner loop */
-#define MMIX_BREAK_LOOP false
+/* this action is executed when ther is no mmo file on the command line */
+#define MMIX_NO_FILE
 
 
 /* define this to get the real TRAP implementation not the MMIXWARE fake TRAPS */
@@ -68,8 +80,6 @@ extern int mmix_fputc(int c, FILE *f);
 
 /* this is the error display function */
 #define MMIX_ERROR(f,m) fprintf(stderr,f,m)
-
-#define MMIX_OPTION_STRING
 
 /* define this if you need the tetra inside the mem_node */
 #define MMIX_MEM_TET /* tetra tet; the tetrabyte of simulated memory */

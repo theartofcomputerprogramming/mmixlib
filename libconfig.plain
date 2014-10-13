@@ -41,11 +41,6 @@
 /* this code defines additional options */
 #define MMIX_OPTIONS  
 
-/* this defines new interactions for the user */
-#define MMIX_INTERACT_STRING 
-
-/* this code defines the actions for the strings above */
-#define MMIX_INTERACT_ACTION
 /* if MMIX_BOOT is defined, mmis-sim will boot from addres #8000...0000
    otherwise it will resume at Main */
 
@@ -59,15 +54,13 @@ extern int mmix_fputc(int c, FILE *f);
 #define fputc(c,f) mmix_fputc(c,f)
 #endif
 
-#define MMIX_USAGE if (!*cur_arg) scan_option("?",true) /* exit with usage note */
+#define MMIX_NO_FILE if (!*cur_arg) scan_option("?",true) /* exit with usage note */
 
 /* define this to get the real TRAP implementation not the MMIXWARE fake TRAPS */
 #undef MMIX_TRAP
 
 /* this is the error display function */
 #define MMIX_ERROR(f,m) fprintf(stderr,f,m)
-
-#define MMIX_OPTION_STRING
 
 /* define this if you need the tetra inside the mem_node */
 #define MMIX_MEM_TET tetra tet; /* the tetrabyte of simulated memory */

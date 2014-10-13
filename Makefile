@@ -16,7 +16,6 @@ LIBSRC= libname.c libbase.c
 
 LIBOBJ= $(LIBSIM:.c=.o) $(LIBAL:.c=.o) $(LIBSRC:.c=.o) mmix-arith.o mmix-io.o
 
-
 CC= gcc
 CFLAGS= -Wall -ggdb -O0
 AR = ar

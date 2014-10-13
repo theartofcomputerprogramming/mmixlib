@@ -275,22 +275,16 @@ int main(argc,argv)
 }
 @y
 @c
-#include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
+#include <stdio.h>
 #include <string.h>
-#include <time.h>
-#include <setjmp.h>
-#include "libconfig.h"
+
 @#
-@<Preprocessor definitions@>@;
-@<Type definitions@>@;
 extern int expanding;
 extern int buf_size;
 extern char*src_file_name;
 extern char obj_file_name[FILENAME_MAX+1];
 extern char listing_name[FILENAME_MAX+1];
-extern jmp_buf mmixal_exit;
 
 extern void report_error(char * message, char *filename, int line_no);
 extern int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option);
@@ -382,12 +376,6 @@ int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_o
 @z
 
 We end with return or longjmp instead of exit.
-
-@x
-  exit(-1);
-@y
-  longjmp(mmixal_exit,-1);
-@z
 
 @x
 if (err_count) {

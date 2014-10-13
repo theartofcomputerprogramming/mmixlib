@@ -760,11 +760,8 @@ void stack_store(x)
   ll=mem_find(g[rS]);
   test_store_bkpt(ll);
   test_store_bkpt(ll+1);
-  if (stack_tracing) {
-    tracing=true;
-    printf("             M8[#%08x%08x]=#%08x%08x, rS+=8\n",
+  mmix_stack_trace("             M8[#%08x%08x]=#%08x%08x, rS+=8\n",
               g[rS].h,g[rS].l,x.h,x.l);
-  }
   g[rS]=incr(g[rS],8),  S++;
 }
 
@@ -801,8 +798,15 @@ void stack_load @,@,@[ARGS((void))@];@+@t}\6{@>
 showing lines is part of main.
 
 @x
+  if (stack_tracing) {
+    tracing=true;
     if (cur_line) show_line();
+    printf("             rS-=8, l[%d]=M8[#%08x%08x]=#%08x%08x\n",
+              k,g[rS].h,g[rS].l,l[k].h,l[k].l);
+  }
 @y
+  mmix_stack_trace("             rS-=8, l[%d]=M8[#%08x%08x]=#%08x%08x\n",
+              k,g[rS].h,g[rS].l,l[k].h,l[k].l);
 @z
 
 @x
@@ -1167,15 +1171,12 @@ if (k==rZ+1)
 }
 else
  if (!MMIX_LDO(g[k],g[rS]))  { w=g[rS]; goto page_fault; }
-if (stack_tracing) {
-  tracing=true;
-  if (k>=32) printf("             rS-=8, g[%d]=M8[#%08x%08x]=#%08x%08x\n",
-            k,g[rS].h,g[rS].l,g[k].h,g[k].l);
-  else if (k==rZ+1) printf("             (rG,rA)=M8[#%08x%08x]=#%08x%08x\n",
-            g[rS].h,g[rS].l,g[k].h,g[k].l);
-  else printf("             rS-=8, %s=M8[#%08x%08x]=#%08x%08x\n",
-            special_name[k],g[rS].h,g[rS].l,g[k].h,g[k].l);
-}
+ if (k>=32) mmix_stack_trace("             rS-=8, g[%d]=M8[#%08x%08x]=#%08x%08x\n",
+          k,g[rS].h,g[rS].l,g[k].h,g[k].l);
+else if (k==rZ+1) mmix_stack_trace("             (rG,rA)=M8[#%08x%08x]=#%08x%08x\n",
+          g[rS].h,g[rS].l,g[k].h,g[k].l);
+else mmix_stack_trace("             rS-=8, %s=M8[#%08x%08x]=#%08x%08x\n",
+          special_name[k],g[rS].h,g[rS].l,g[k].h,g[k].l);
 @z
 
 @x
@@ -1884,6 +1885,7 @@ void trace_print @,@,@[ARGS((octa))@];@+@t}\6{@>
 @ @(libtrace.c@>=
 #include <stdio.h>
 #include <setjmp.h>
+#include <stdarg.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
@@ -1891,6 +1893,17 @@ void trace_print @,@,@[ARGS((octa))@];@+@t}\6{@>
 #include "mmixlib.h"
 #include "libarith.h"
 #include "libimport.h"
+
+void mmix_stack_trace(char *format,...)
+{ 
+  if (stack_tracing) {
+    va_list vargs;
+    tracing=true;
+    va_start(vargs,format);	
+    vprintf(format, vargs);
+  }
+}
+
 
 static fmt_style style;
 static char *stream_name[]={"StdIn","StdOut","StdErr"};
@@ -2171,6 +2184,7 @@ page_fault:
 #include "mmix-io.h"
 #include "libimport.h"
 
+
 static bool interact_after_resume= false;
 
 @<Stack store@>@;
@@ -2342,7 +2356,7 @@ mmo_file_name may become a variable not an alias.
 if (!*cur_arg) scan_option("?",true); /* exit with usage note */
 argc -= cur_arg-argv; /* this is the |argc| of the user program */
 @y
-MMIX_USAGE;
+MMIX_NO_FILE;
 argc -= (int)(cur_arg-argv); /* this is the |argc| of the user program */
 @z
 
@@ -2430,11 +2444,11 @@ BOOL CtrlHandler( DWORD fdwCtrlType )
   interrupt=true;
   if (fdwCtrlType==CTRL_C_EVENT || fdwCtrlType==CTRL_BREAK_EVENT )
   { 
-    printf("Ctrl-C received\n");
+   /* do nothing */
   }
   else
-  { printf("Closing MMIX\n");
-    halted=true;
+  { 
+    interrupt=halted=true;
   }
   return TRUE;
 }
@@ -2444,7 +2458,6 @@ void catchint(n)
   int n;
 { MMIX_CTRL_HANDLER  
   interrupt=true;
-  printf("Ctrl-C received\n");
   signal(SIGINT,catchint); /* now |catchint| will catch the next interrupt */
 }
 #endif
