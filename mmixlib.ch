@@ -2316,7 +2316,6 @@ boot:
       mmix_trace();
       mmix_dynamic_trap();
       if (resuming && op!=RESUME) resuming=false; 
-      if (!resuming && MMIX_BREAK_LOOP) break; 
     } while (resuming || (!interrupt && !breakpoint));
     if (interact_after_break) 
        interacting=true, interact_after_break=false;
@@ -2372,8 +2371,9 @@ void scan_option @,@,@[ARGS((char*,bool))@];@+@t}\6{@>
  case 'b':@+if (sscanf(arg+1,"%d",&buf_size)!=1) buf_size=0;@+return;
 @y
  case 'b':@+if (sscanf(arg+1,"%d",&buf_size)!=1) buf_size=0;@+return;
+ case 'O': show_operating_system=true;@+return; \
+ case 'o': show_operating_system=false;@+return; 
  MMIX_OPTIONS
-
 @z
 
 we need to replace all exits.
@@ -2393,21 +2393,15 @@ bool profiling=0; /* should we print the profile at the end? */
 @z
 
 @x
-"-s    show statistics after each traced instruction\n",@|
+"S         set current segment to Stack_Segment\n",@|
 @y
-MMIX_OPTION_STRING
-"-s    show statistics after each traced instruction\n",@|
+"S         set current segment to Stack_Segment\n",@|
+"N         set current segment to Negative Addresses\n",@|
+"O         enable tracing inside the operating system\n",@|
+"o         disable tracing inside the operating system\n",@|
 @z
 
 
-
-@x
-"T         set current segment to Text_Segment\n",@|
-@y
-MMIX_INTERACT_STRING
-"T         set current segment to Text_Segment\n",@|
-
-@z
 
 @x
 @ @<Initialize...@>=
@@ -2555,7 +2549,9 @@ We allow breakpoints at all addresses.
 case 'B': show_breaks(mem_root);
 @y
 case 'B': show_breaks(mem_root);@+goto passit;
-MMIX_INTERACT_ACTION   
+case 'N': cur_seg.h=0x80000000;@+goto passit;
+case 'O': show_operating_system=true;@+goto passit;
+case 'o': show_operating_system=false;@+goto passit;
 @z
 
 @x

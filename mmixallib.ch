@@ -280,6 +280,7 @@ int main(argc,argv)
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
+#include <setjmp.h>
 #include "libconfig.h"
 @#
 @<Preprocessor definitions@>@;
@@ -289,7 +290,7 @@ extern int buf_size;
 extern char*src_file_name;
 extern char obj_file_name[FILENAME_MAX+1];
 extern char listing_name[FILENAME_MAX+1];
-
+extern jmp_buf mmixal_exit;
 
 extern void report_error(char * message, char *filename, int line_no);
 extern int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option);
@@ -310,6 +311,7 @@ int main(argc,argv)
 #include <ctype.h>
 #include <string.h>
 #include <time.h> 
+#include <setjmp.h>
 #include "libconfig.h"
 @#
 @h
@@ -318,6 +320,7 @@ int main(argc,argv)
 @<Global variables@>@;
 
 extern void report_error(char * message, char *filename, int line_no);
+extern jmp_buf mmixal_exit;
 
 @<Subroutines@>@;
 
@@ -378,7 +381,13 @@ int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_o
 }
 @z
 
-We end with return instead of exit.
+We end with return or longjmp instead of exit.
+
+@x
+  exit(-1);
+@y
+  longjmp(mmixal_exit,-1);
+@z
 
 @x
 if (err_count) {
@@ -431,6 +440,7 @@ clean_up:
   
 return err_count;
 @z
+
 
 To report undefined local sysmbols we use the
 usual error reporting.

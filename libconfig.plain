@@ -23,8 +23,8 @@
 
 
 #define MMIX_FETCH(inst,loc) (ll=mem_find(loc),inst=ll->tet,true)
-#define  MMIX_STORE_IVTC(virt,phys)
-#define  MMIX_STORE_DVTC(virt,phys)
+#define MMIX_STORE_IVTC(virt,phys)
+#define MMIX_STORE_DVTC(virt,phys)
 
 #ifdef WIN32
 #define	MMIX_DELAY(ms,d)  (Sleep(ms), d=(ms))
@@ -32,7 +32,7 @@
 #define	MMIX_DELAY(ms,d)  (usleep(1000*(ms)), d=(ms))
 #endif
 
-/* define this to check for external asynchronous ineterrupts*/
+/* define this to check for external asynchronous interrupts*/
 #define MMIX_GET_INTERRUPT
 
 /* this code is executed when MMIX enters the handler for Ctrl-C */
@@ -60,10 +60,6 @@ extern int mmix_fputc(int c, FILE *f);
 #endif
 
 #define MMIX_USAGE if (!*cur_arg) scan_option("?",true) /* exit with usage note */
-
-/* give a condition to break from the inner loop */
-#define MMIX_BREAK_LOOP false
-
 
 /* define this to get the real TRAP implementation not the MMIXWARE fake TRAPS */
 #undef MMIX_TRAP
