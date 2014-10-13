@@ -18,13 +18,14 @@ void print_hex @,@,@[ARGS((octa))@];@+@t}\6{@>
 @y
 @ @(libprint.c@>=
 #include <stdio.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
-
 #include "libarith.h"
+#include "libimport.h"
 
 void print_hex @,@,@[ARGS((octa))@];@+@t}\6{@>
 @z
@@ -41,7 +42,7 @@ extern octa zero_octa; /* |zero_octa.h=zero_octa.l=0| */
 extern octa zero_octa; /* |zero_octa.h=zero_octa.l=0| */
 @z
 
-Fatal errors need to be handled but panic moves to libconfig.h
+Fatal errors need to be handled but error messages moves to libconfig.h
 
 @x
 @d panic(m) {@+fprintf(stderr,"Panic: %s!\n",m);@+exit(-2);@+}
@@ -72,18 +73,24 @@ mem_node* new_mem @,@,@[ARGS((void))@];@+@t}\6{@>
 @(libmem.c@>=
 #include <stdlib.h>
 #include <stdio.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
+#include "libimport.h"
 
 
-#include <setjmp.h>
-extern jmp_buf mmix_exit;
 
 mem_node* new_mem @,@,@[ARGS((void))@];@+@t}\6{@>
 @z
+
+We distinguish between different levels of initialization:
+persistent data (initialized once when we load the library),
+then data that needs to be initialized each time we start the
+simulator, 
+and finally data that is initialized each time we boot the machine.
 
 @x
 @<Initialize...@>=
@@ -96,6 +103,8 @@ mem_root=new_mem();
 mem_root->loc.h=0x40000000;
 last_mem=mem_root;
 @z
+
+Handling the simulation of memory goes into its own file.
 
 @x
 @<Sub...@>=
@@ -113,6 +122,8 @@ Defining the macro mm conflicts with other macros when using MS Visual C
 @d mmo_esc 0x98 /* the escape code of \.{mmo} format */
 @z
 
+Loading the object file will go into its own file. 
+
 @x
 @<Initialize everything@>=
 mmo_file=fopen(mmo_file_name,"rb");
@@ -121,7 +132,8 @@ mmo_file=fopen(mmo_file_name,"rb");
 mmo_file=fopen(mmo_file_name,"rb");
 @z
 
-This is simpler and uses the predefined panic subroutine.
+How to print errors is defined in libconfig.h and
+exit needs to be replaced by a longjmp.
 
 @x
     fprintf(stderr,"Can't open the object file %s or %s!\n",
@@ -129,19 +141,45 @@ This is simpler and uses the predefined panic subroutine.
                mmo_file_name,alt_name);
     exit(-3);
 @y
-   panic("Can't open the object file");
+   MMIX_ERROR("Can't open the object file %s!\n",mmo_file_name);
+   longjmp(mmix_exit,-3);
 @z
 
 
+these global varaibles go into libload
+
 @x
-@d mmo_err {
+@ @<Glob...@>=
+FILE *mmo_file; /* the input file */
+int postamble; /* have we encountered |lop_post|? */
+int byte_count; /* index of the next-to-be-read byte */
+byte buf[4]; /* the most recently read bytes */
+int yzbytes; /* the two least significant bytes */
+int delta; /* difference for relative fixup */
+tetra tet; /* |buf| bytes packed big-endianwise */
+@y
+@ @<Load globals@>=
+static FILE *mmo_file; /* the input file */
+static int postamble; /* have we encountered |lop_post|? */
+static int byte_count; /* index of the next-to-be-read byte */
+static byte buf[4]; /* the most recently read bytes */
+static int yzbytes; /* the two least significant bytes */
+static int delta; /* difference for relative fixup */
+static tetra tet; /* |buf| bytes packed big-endianwise */@z
+@z
+
+MMIX_ERROR again.
+
+@x
      fprintf(stderr,"Bad object file! (Try running MMOtype.)\n");
 @.Bad object file@>
      exit(-4);
-   }
 @y   
-@d mmo_err {panic("Bad object file! (Try running MMOtype.)");}
+     MMIX_ERROR("%s","Bad object file! (Try running MMOtype.)\n");
+     longjmp(mmix_exit,-4);
 @z
+
+The next function goes into libload.
 
 @x
 @<Sub...@>=
@@ -151,6 +189,7 @@ void read_tet @,@,@[ARGS((void))@];@+@t}\6{@>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
@@ -158,16 +197,18 @@ void read_tet @,@,@[ARGS((void))@];@+@t}\6{@>
 #include "mmixlib.h"
 #include "libarith.h"
 #include "libname.h"
+#include "libimport.h"
 
-#include <setjmp.h>
-extern jmp_buf mmix_exit;
 
+@<Load globals@>
 
 @<Loading subroutines@>@;
 
 @ @<Loading subroutines@>=
 void read_tet @,@,@[ARGS((void))@];@+@t}\6{@>
 @z
+
+Also to libload.
 
 @x
 @ @<Sub...@>=
@@ -177,17 +218,24 @@ byte read_byte @,@,@[ARGS((void))@];@+@t}\6{@>
 byte read_byte @,@,@[ARGS((void))@];@+@t}\6{@>
 @z
 
+Replace mm by mmo_esc.
+
 @x
 if (buf[0]!=mm || buf[1]!=lop_pre) mmo_err;
 @y
 if (buf[0]!=mmo_esc || buf[1]!=lop_pre) mmo_err;
 @z
 
+And again.
+
 @x
  loop:@+if (buf[0]==mm) switch (buf[1]) {
 @y
  loop:@+if (buf[0]==mmo_esc) switch (buf[1]) {
 @z
+
+The macro mmo_load becomes a function,
+which uses MMIX_LDT and MMIX_STT as defined in libconfig.h.
 
 @x
 @d mmo_load(loc,val) ll=mem_find(loc), ll->tet^=val
@@ -198,18 +246,17 @@ if (buf[0]!=mmo_esc || buf[1]!=lop_pre) mmo_err;
 static mem_tetra *load_mem_tetra(octa loc, tetra val)  
 { octa x; 
   mem_tetra *ll=mem_find(loc);           
-  load_tetra(&x,loc);     
+  MMIX_LDT(x,loc);     
   x.l = x.l^val;             
-  if (!store_tetra(x,loc))  
+  if (!MMIX_STT(x,loc))  
   panic("Unable to store mmo file to RAM");
   return ll;
 }
 
-@ This function is used here:
-
+@ This function is used next.
 @z
 
-before we increment the line number,
+Before we increment the line number,
 we reset the frequency.
 
 @x
@@ -229,9 +276,13 @@ cur_loc.h=cur_loc.l=0;
 cur_loc.h=cur_loc.l=0;
 @z
 
+mmo files use local file numbers.
+As we might load multiple files,
 we have to map the file number stored in
 the mmo file as the ybyte to the 
 filenumbers used inside the library.
+Default conversion functions are defined
+in libname.c.
 
 First the case of known files.
 
@@ -241,9 +292,9 @@ case lop_file:@+if (file_info[ybyte].name) {
    cur_file=ybyte;
 @y
 case lop_file:
-   if (ybyte2file_no[ybyte]>=0) {
+   if (ybyte2file(ybyte)>=0) {
    if (zbyte) mmo_err;
-   cur_file=ybyte2file_no[ybyte];
+   cur_file=ybyte2file(ybyte);
 @z
 
 Now we handle new files.
@@ -268,19 +319,17 @@ Now we handle new files.
    if (!zbyte) mmo_err;
    name=(char*)calloc(4*zbyte+1,1);
    if (!name) {
-     panic("No room to store the file name!\n");
-@.No room...@>
+     MMIX_ERROR("%s","No room to store the file name!\n");@+longjmp(mmix_exit,-5);
    }   
    for (j=zbyte,p=name; j>0; j--,p+=4) {
      read_tet();
      *p=buf[0];@+*(p+1)=buf[1];@+*(p+2)=buf[2];@+*(p+3)=buf[3];
    }
    cur_file=filename2file(name,ybyte);
-   ybyte2file_no[ybyte]=cur_file;
-   file_info[cur_file].name=name;
  }
 @z
 
+mm was replaced by mmo_esc.
 
 @x
    if (buf[0]==mm) {
@@ -291,7 +340,8 @@ Now we handle new files.
 We load the postamble into the beginning
 of segment~3, also known as \.{Stack\_Segment}).
 The stack segment is set up to be used with an unsave instruction.
-On the stack, we have, the local registers (argc and argv) and the value of rL, then the global 
+On the stack, we have, the local registers (argc and argv) and the 
+value of rL, then the global 
 registers and the special registers rB, rD, rE, rH, rJ, rM, rR, rP, rW, rX, rY, and rZ,
 followed by rG and rA packed into eight byte.
 
@@ -313,20 +363,20 @@ g[255]=incr(aux,12*8); /* we will \.{UNSAVE} from here, to get going */
 { octa x;
   aux.h=0x60000000;
   x.h=0;@+x.l=0;@+aux.l=0x00;
-  if (!store_octa(x,aux)) /* $\$0=|argc|$ */
+  if (!MMIX_STO(x,aux)) /* $\$0=|argc|$ */
      panic("Unable to store mmo file to RAM");
   x.h=0x40000000;@+x.l=0x8;@+aux.l=0x08;
-  if (!store_octa(x,aux)) /* and $\$1=\.{Pool\_Segment}+8$ */
+  if (!MMIX_STO(x,aux)) /* and $\$1=\.{Pool\_Segment}+8$ */
      panic("Unable to store mmo file to RAM");
   x.h=0;@+x.l=2;@+aux.l=0x10;
-  if (!store_octa(x,aux)) /* this will ultimately set |rL=2| */
+  if (!MMIX_STO(x,aux)) /* this will ultimately set |rL=2| */
      panic("Unable to store mmo file to RAM");
   G=zbyte;@+ L=0;@+ O=0;
   aux.l=0x18;
   for (j=G;j<256;j++,aux.l+=8) 
   { read_tet(); x.h=tet;
     read_tet(), x.l=tet;
-    if (!store_octa(x,aux))
+    if (!MMIX_STO(x,aux))
        panic("Unable to store mmo file to RAM");
   }
   aux=incr(aux,12*8); /* we can |UNSAVE| from here, to get going */
@@ -342,36 +392,23 @@ g[255]=incr(aux,12*8); /* we will \.{UNSAVE} from here, to get going */
 #endif
 //  if (interacting) set_break(x,exec_bit);
   x.h=G<<24; x.l=0 /* rA */; 
-  if (!store_octa(x,aux))
+  if (!MMIX_STO(x,aux))
      panic("Unable to store mmo file to RAM");
   G=g[rG].l; /* restore G to rG because it was changed above */
 }
 @z
 
-Because mmo files have their own notion of
-file numbers, we have to map mmo file numbers
-to file numbers used in mem and in file_nodes.
-
-@x
-file_node file_info[256]; /* data about each source file */
-@y
-file_node file_info[256]; /* data about each source file */
-int ybyte2file_no[256]; /* mapping internal to external files */
-@z
-
+The source line buffer is allocated once.
 
 @x
 @<Initialize...@>=
 if (buf_size<72) buf_size=72;
-buffer=(Char*)calloc(buf_size+1,sizeof(Char));
-if (!buffer) panic("Can't allocate source line buffer");
-@.Can't allocate...@>
 @y
 @<Set up persistent data@>=
 if (buf_size<72) buf_size=72;
-buffer=(Char*)calloc(buf_size+1,sizeof(Char));
-if (!buffer) return -1;
 @z
+
+The display of source lines gets its own file.
 
 @x
 @<Sub...@>=
@@ -383,14 +420,14 @@ void make_map @,@,@[ARGS((void))@];@+@t}\6{@>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
+#include "libimport.h"
 
-#include <setjmp.h>
-extern jmp_buf mmix_exit;
 
 void make_map @,@,@[ARGS((void))@];@+@t}\6{@>
 @z
@@ -428,30 +465,36 @@ void show_line @,@,@[ARGS((void))@];@+@t}\6{@>
 void show_line @,@,@[ARGS((void))@];@+@t}\6{@>
 @z
 
+Printing the profile has its own file.
+
 @x
 @<Sub...@>=
 void print_freqs @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
 @y
 @(libprofile.c@>=
 #include <stdio.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "libarith.h"
+#include "libimport.h"
 
 void print_freqs @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
 @z
 
-We need ll as a local variable.
+We need ll as a local variable here.
 
 @x
   octa cur_loc;
 @y
   octa cur_loc;
-  mem_tetra *ll;
+  MMIX_LOCAL_LL
 @z
+
+we use MMIX_FETCH.
 
 @x
  loc_implied: printf("%10d. %08x%08x: %08x (%s)\n",
@@ -460,7 +503,7 @@ We need ll as a local variable.
 @y
  loc_implied:
  { tetra inst; 
-   load_instruction(&inst,cur_loc);
+   MMIX_FETCH(inst,cur_loc);
    printf("%10d. %08x%08x: %08x (%s)\n",
       p->dat[j].freq, cur_loc.h, cur_loc.l, inst,
       info[inst>>24].name);
@@ -470,6 +513,7 @@ We need ll as a local variable.
 For the mmixlib, we split performing the
 instruction in three parts: 
 resuming,fetching, and executing.
+here we do only the resuming.
 
 @x
 @<Perform one instruction@>=
@@ -501,7 +545,6 @@ This restriction is no longer necessary.
 the next two lines are not a propper part of
 performing an instruction and move to a separate 
 function respectively to the main loop.
-But we check for traps.
 @x
   @<Trace the current instruction, if requested@>;
   if (resuming && op!=RESUME) resuming=false;
@@ -549,37 +592,24 @@ register char *p; /* current place in a string */
 @y
 @z
 
+loading the instruction is postponed
 
 @x
-@ @<Fetch the next instruction@>=
-{
-  loc=inst_ptr;
-  ll=mem_find(loc);
   inst=ll->tet;
-  cur_file=ll->file_no;
-  cur_line=ll->line_no;
-  ll->freq++;
-  if (ll->bkpt&exec_bit) breakpoint=true;
-  tracing=breakpoint||(ll->bkpt&trace_bit)||(ll->freq<=trace_threshold);
-  inst_ptr=incr(inst_ptr,4);
-}
 @y
-@ @<Fetch the next instruction@>=
-{ loc=inst_ptr;
-  ll=mem_find(loc);
-  inst=SWYM<<24; /* default SWYM */
-  cur_file=ll->file_no;
-  cur_line=ll->line_no;
-  ll->freq++;
-  if (ll->bkpt&exec_bit) breakpoint=true;
-  tracing=breakpoint||(ll->bkpt&trace_bit)||(ll->freq<=trace_threshold);
+@z
+
+now before incrementing the instruction pointer we load the instruction.
+@x
+  inst_ptr=incr(inst_ptr,4);
+@y
   @<Check for security violation@>
-  if(!load_instruction(&inst,loc)) 
+  inst=0; /* default TRAP 0,Halt,0 */
+  if(!MMIX_FETCH(inst,loc)) 
     goto page_fault;
   inst_ptr=incr(inst_ptr,4);
   if ((inst_ptr.h&sign_bit) && !(loc.h&sign_bit))
     goto protection_violation;
-}
 @z
 
 We change how to display certain instructions.
@@ -609,7 +639,7 @@ int G=255,L=0,O=0; /* accessible copies of key registers */
 @z
 
 
-Initialization needs to be done at each reboot.
+Some initialization needs to be done once others at each reboot.
 
 @x
 @<Initialize...@>=
@@ -632,9 +662,10 @@ cur_round=ROUND_NEAR;
 @<Set up persistent data@>=
 if (lring_size<256) lring_size=256;
 lring_mask=lring_size-1;
-if (lring_size&lring_mask) return -1;
+if (lring_size&lring_mask) 
+  panic("The number of local registers must be a power of 2");
 l=(octa*)calloc(lring_size,sizeof(octa));
-if (!l) return -1;
+if (!l)  panic("No room for the local registers");
 
 @ @<Initialize...@>=
 sclock.l=sclock.h=0;
@@ -650,7 +681,7 @@ memset(l,0,lring_size*sizeof(octa));
 memset(g,0,sizeof(g));
 L=O=S=0;
 G=g[rG].l=255;
-#if MMIX_BOOT
+#ifdef MMIX_BOOT
 g[rK] = zero_octa;
 #else
 g[rK] = neg_one;
@@ -705,7 +736,7 @@ void stack_store(x)
   mem_tetra *ll;
   pw_bit=g[rQ].h&PW_BIT;
   new_pw_bit=new_Q.h&PW_BIT;
-  if(!store_octa(x,g[rS])) /* implementing the rC register */
+  if(!MMIX_STO(x,g[rS])) /* implementing the rC register */
   {   /* set CP_BIT */
       g[rQ].l |= CP_BIT;
       new_Q.l |= CP_BIT;
@@ -723,7 +754,7 @@ void stack_store(x)
          mask.h &= 0x0000FFFF;     /* reduce mask to 48 bits */
          base.h = g[rC].h&mask.h,base.l = g[rC].l&mask.l;
          address.h=base.h|offset.h,address.l=base.l|offset.l;
-         store_octa(x,address);
+         MMIX_STO(x,address);
       }
   }
   ll=mem_find(g[rS]);
@@ -764,8 +795,10 @@ void stack_load @,@,@[ARGS((void))@];@+@t}\6{@>
   l[k].l=(ll+1)->tet;@+test_load_bkpt(ll+1);
 @y
   test_load_bkpt(ll);@+test_load_bkpt(ll+1);
-  load_octa(&l[k],g[rS]);
+  MMIX_LDO(l[k],g[rS]);
 @z
+
+showing lines is part of main.
 
 @x
     if (cur_line) show_line();
@@ -791,6 +824,7 @@ int register_truth @,@,@[ARGS((octa,mmix_opcode))@];@+@t}\6{@>
    inst_ptr=z;
 @z
 
+Loading is supposed to use the functions from libconfig
 
 @x
 case LDB: case LDBI: case LDBU: case LDBUI:@/
@@ -806,12 +840,12 @@ fin_ld: ll=mem_find(w);@+test_load_bkpt(ll);
 check_ld:@+if (w.h&sign_bit) goto privileged_inst; 
 @y
 case LDB: case LDBI: case LDBU: case LDBUI:@/
- i=56;@+j=56;@+if(!load_byte(&x,w)) goto page_fault; goto fin_ld;
+ i=56;@+j=56;@+if(!MMIX_LDB(x,w)) goto page_fault; goto fin_ld;
 case LDW: case LDWI: case LDWU: case LDWUI:@/
- i=48;@+j=48;@+if(!load_wyde(&x,w)) goto page_fault; goto fin_ld;
+ i=48;@+j=48;@+if(!MMIX_LDW(x,w)) goto page_fault; goto fin_ld;
 case LDT: case LDTI: case LDTU: case LDTUI:@/
- i=32;@+j=32;@+if(!load_tetra(&x,w)) goto page_fault; goto fin_ld;
-case LDHT: case LDHTI: i=j=0;@+if(!load_tetra(&x,w)) goto page_fault;
+ i=32;@+j=32;@+if(!MMIX_LDT(x,w)) goto page_fault; goto fin_ld;
+case LDHT: case LDHTI: i=j=0;@+if(!MMIX_LDT(x,w)) goto page_fault;
 x.h=x.l;x.l=0;
 fin_ld: ll=mem_find(w);@+test_load_bkpt(ll);
  if (op&0x2) x=shift_right(shift_left(x,i),i,op&0x2);
@@ -840,18 +874,19 @@ case LDSF: case LDSFI: ll=mem_find(w);@+test_load_bkpt(ll);
 case LDO: case LDOI: case LDOU: case LDOUI: 
  w.l&=-8;@+ ll=mem_find(w);
  test_load_bkpt(ll);@+test_load_bkpt(ll+1);
- if (!load_octa(&x,w)) goto page_fault;
+ if (!MMIX_LDO(x,w)) goto page_fault;
  goto check_ld;
 case LDUNC: case LDUNCI:
  w.l&=-8;@+ ll=mem_find(w);
  test_load_bkpt(ll);@+test_load_bkpt(ll+1);
- if (!load_octa_uncached(&x,w)) goto page_fault;
+ if (!MMIX_LDO_UNCACHED(x,w)) goto page_fault;
  goto check_ld;
 case LDSF: case LDSFI: ll=mem_find(w);@+test_load_bkpt(ll);
- if (!load_tetra(&x,w)) goto page_fault;
+ if (!MMIX_LDT(x,w)) goto page_fault;
  x=load_sf(x.l);@+ goto check_ld;
 @z
 
+Same for storing.
 
 @x
 case STB: case STBI: case STBU: case STBUI:@/
@@ -863,7 +898,7 @@ case STB: case STBI: case STBU: case STBUI:@/
    if (a.h!=b.h || a.l!=b.l) exc|=V_BIT;
  }
  if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
- if (!store_byte(b,w)) goto page_fault;
+ if (!MMIX_STB(b,w)) goto page_fault;
  ll=mem_find(w); test_store_bkpt(ll);
  break;
 @z
@@ -878,7 +913,7 @@ case STW: case STWI: case STWU: case STWUI:@/
    if (a.h!=b.h || a.l!=b.l) exc|=V_BIT;
  }
  if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
- if (!store_wyde(b,w)) goto page_fault;
+ if (!MMIX_STW(b,w)) goto page_fault;
  ll=mem_find(w); test_store_bkpt(ll);
  break;
 @z
@@ -901,7 +936,7 @@ case STT: case STTI: case STTU: case STTUI:@/
  }
 fin_pst:
  if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
- if (!store_tetra(b,w)) goto page_fault;
+ if (!MMIX_STT(b,w)) goto page_fault;
  ll=mem_find(w); test_store_bkpt(ll);
  break;
 @z
@@ -944,13 +979,13 @@ case STCO: case STCOI: b.l=xx;
 case STO: case STOI: case STOU: case STOUI:
  w.l&=-8;
  if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
- if (!store_octa(b,w)) goto page_fault;
+ if (!MMIX_STO(b,w)) goto page_fault;
  ll=mem_find(w); test_store_bkpt(ll);test_store_bkpt(ll+1);
  break;
 case STUNC: case STUNCI:
  w.l&=-8;
  if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
- if (!store_octa_uncached(b,w)) goto page_fault;
+ if (!MMIX_STO_UNCACHED(b,w)) goto page_fault;
  ll=mem_find(w); test_store_bkpt(ll);test_store_bkpt(ll+1);
  break;
 @z
@@ -973,11 +1008,11 @@ case CSWAP: case CSWAPI: w.l&=-8;@+ll=mem_find(w);
 case CSWAP: case CSWAPI: w.l&=-8;@+ll=mem_find(w);
  test_load_bkpt(ll);@+test_load_bkpt(ll+1);
  if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto  translation_bypassed_inst;
- if (!load_octa(&a,w)) goto page_fault;
+ if (!MMIX_LDO(a,w)) goto page_fault;
  if (g[rP].h==a.h && g[rP].l==a.l) {
    x.h=0, x.l=1;
    test_store_bkpt(ll);@+test_store_bkpt(ll+1);
-   if (!store_octa(b,w)) goto page_fault;
+   if (!MMIX_STO(b,w)) goto page_fault;
    strcpy(rhs,"M8[%#w]=%#b");
  }@+else {
    b=a;
@@ -1126,12 +1161,12 @@ g[rS]=incr(g[rS],-8);
 ll=mem_find(g[rS]);
 test_load_bkpt(ll);@+test_load_bkpt(ll+1);
 if (k==rZ+1) 
-{ if (!load_octa(&a,g[rS])) { w=g[rS]; goto page_fault; }
+{ if (!MMIX_LDO(a,g[rS])) { w=g[rS]; goto page_fault; }
   x.l=G=g[rG].l=a.h>>24;
   a.l=g[rA].l=a.l&0x3ffff;
 }
 else
- if (!load_octa(&(g[k]),g[rS]))  { w=g[rS]; goto page_fault; }
+ if (!MMIX_LDO(g[k],g[rS]))  { w=g[rS]; goto page_fault; }
 if (stack_tracing) {
   tracing=true;
   if (k>=32) printf("             rS-=8, g[%d]=M8[#%08x%08x]=#%08x%08x\n",
@@ -1158,23 +1193,23 @@ case PRELD: case PRELDI: x=incr(w,xx);@+break;
 
 @<Cases for ind...@>=
 case SYNCID: case SYNCIDI:
- delete_instruction_cache(w,xx+1);
+ MMIX_DELETE_ICACHE(w,xx+1);
  if (loc.h&sign_bit)
-   delete_data_cache(w,xx+1);
+   MMIX_DELETE_DCACHE(w,xx+1);
  else
-   store_data_cache(w,xx+1);
+   MMIX_STORE_DCACHE(w,xx+1);
  break;
 case PREST: case PRESTI: x=incr(w,xx);@+break;
 case SYNCD: case SYNCDI:  
- store_data_cache(w,xx+1);
+ MMIX_STORE_DCACHE(w,xx+1);
  if (loc.h&sign_bit)
-   delete_data_cache(w,xx+1);
+   MMIX_DELETE_DCACHE(w,xx+1);
  break;
 case PREGO: case PREGOI:
- prego_instruction(w,xx+1);
+ MMIX_PRELOAD_ICACHE(w,xx+1);
  break;
 case PRELD: case PRELDI:
- preload_data_cache(w,xx+1);
+ MMIX_PRELOAD_DCACHE(w,xx+1);
  x=incr(w,xx);@+break;
 @z
 
@@ -1221,20 +1256,20 @@ case SYNC:@+if (xx!=0 || yy!=0 || zz>7) goto illegal_inst;
         g[rI].l = g[rI].l-10;
  }
  else if (zz==5) /* empty write buffer */
-   write_all_data_cache();
+   MMIX_WRITE_DCACHE();
  else if (zz==6) /* clear VAT cache */
- { clear_all_data_vtc();
-   clear_all_instruction_vtc();
+ {  MMIX_CLEAR_DVTC();
+    MMIX_CLEAR_IVTC();
  }
  else if (zz==7) /* clear instruction and data cache */
- { clear_all_data_cache();
-   clear_all_instruction_cache();
+ { MMIX_CLEAR_DCACHE();
+   MMIX_CLEAR_ICACHE();
  }
  break;
 case LDVTS: case LDVTSI:   
 { if (!(loc.h&sign_bit)) goto privileged_inst;
   if (w.h&sign_bit) goto illegal_inst;
-  x = update_vtc(w);
+  x = MMIX_UPDATE_VTC(w);
   goto store_x;
 }
 break;
@@ -1355,8 +1390,8 @@ if (arg_count[yy]==3) {
 @y
 @ @<Prepare memory arguments...@>=
 if (arg_count[yy]==3) {
-   load_octa(&mb,b);
-   load_octa(&ma,a);
+   MMIX_LDO(mb,b);
+   MMIX_LDO(ma,a);
 }
 @z
 
@@ -1396,12 +1431,14 @@ int mmgetchars(buf,size,addr,stop)
 @y
 @(libmmget.c@>=
 #include <stdio.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "libarith.h"
+#include "libimport.h"
 
 int mmgetchars(buf,size,addr,stop)
   unsigned char *buf;
@@ -1413,7 +1450,7 @@ int mmgetchars(buf,size,addr,stop)
   register int m;
   octa x;
   octa a;
-  mem_tetra *ll;
+  MMIX_LOCAL_LL
   for (p=buf,m=0,a=addr; m<size;) {
     if ((a.l&0x7) || m+8>size) @<Read and store one byte; |return| if done@>@;
     else @<Read and store eight bytes; |return| if done@>@;
@@ -1447,7 +1484,7 @@ int mmgetchars(buf,size,addr,stop)
 }
 @y
 @ @<Read and store one byte...@>=
-{ load_byte(&x,a);
+{ MMIX_LDB(x,a);
     *p=x.l&0xff;
   if (!*p && stop>=0) {
     if (stop==0) return m;
@@ -1457,7 +1494,7 @@ int mmgetchars(buf,size,addr,stop)
 }
 
 @ @<Read and store eight bytes...@>=
-{ load_octa(&x,a);
+{ MMIX_LDO(x,a);
   *p=x.h>>24;
   if (!*p && (stop==0 || (stop>0 && x.h<0x10000))) return m;
   *(p+1)=(x.h>>16)&0xff;
@@ -1506,12 +1543,14 @@ into the simulated memory starting at address |addr|.
 
 @(libmmput.c@>=
 #include <stdio.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "libarith.h"
+#include "libimport.h"
 
 void mmputchars(unsigned char *buf,int size,octa addr)
 {
@@ -1519,7 +1558,7 @@ void mmputchars(unsigned char *buf,int size,octa addr)
   register int m;
   octa x;
   octa a;
-  mem_tetra *ll; /* current place in the simulated memory */
+  MMIX_LOCAL_LL
   for (p=buf,m=0,a=addr; m<size;) {
     if ((a.l&0x7) || m+8>size) @<Load and write one byte@>@;
     else @<Load and write eight bytes@>;
@@ -1545,7 +1584,7 @@ void mmputchars(unsigned char *buf,int size,octa addr)
 {
   x.l=*p;
   x.h=0;
-  store_byte(x,a);
+  MMIX_STB(x,a);
   p++,m++,a=incr(a,1);
 }
 
@@ -1554,7 +1593,7 @@ void mmputchars(unsigned char *buf,int size,octa addr)
   p+=4;
   x.l=(*p<<24)+(*(p+1)<<16)+(*(p+2)<<8)+*(p+3);
   p+=4;
-  store_octa(x,a);
+  MMIX_STO(x,a);
   m+=8,a=incr(a,8);
 }
 @z
@@ -1568,14 +1607,14 @@ char stdin_chr @,@,@[ARGS((void))@];@+@t}\6{@>
 @(libstdin.c@>=
 #include <stdlib.h>
 #include <stdio.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
+#include "libimport.h"
 
-#include <setjmp.h>
-extern jmp_buf mmix_exit;
 
 char stdin_chr @,@,@[ARGS((void))@];@+@t}\6{@>
 @z
@@ -1789,9 +1828,9 @@ else
     f=X_is_dest_bit;
   } else if (rop==RESUME_TRANS)
   {  if ((b.l>>24)==SWYM) 
-       store_exec_translation(&g[rYY], &g[rZZ]);
+       MMIX_STORE_IVTC(g[rYY], g[rZZ]);
      else
-       store_data_translation(&g[rYY], &g[rZZ]);
+       MMIX_STORE_DVTC(g[rYY], g[rZZ]);
   }@+else if (rop == RESUME_CONT) {
   y=g[rYY];
   z=g[rZZ];
@@ -1799,6 +1838,12 @@ else
 }
 @z
 
+We add parentheses here to make sure & comes before == and get rid of a compiler warning.
+@x
+      if (g[rU].l==0)@+{@+g[rU].h++;@+if (g[rU].h&0x7fff==0) g[rU].h-=0x8000;@+}
+@y
+      if (g[rU].l==0)@+{@+g[rU].h++;@+if ((g[rU].h&0x7fff)==0) g[rU].h-=0x8000;@+}
+@z
 
 @x
   if (g[rI].l<=info[op].oops && g[rI].l && g[rI].h==0) tracing=breakpoint=true;
@@ -1838,12 +1883,14 @@ void trace_print @,@,@[ARGS((octa))@];@+@t}\6{@>
 @y
 @ @(libtrace.c@>=
 #include <stdio.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "libarith.h"
+#include "libimport.h"
 
 static fmt_style style;
 static char *stream_name[]={"StdIn","StdOut","StdErr"};
@@ -1870,12 +1917,14 @@ void show_stats @,@,@[ARGS((bool))@];@+@t}\6{@>
 @y
 @ @(libstats.c@>=
 #include <stdio.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "libarith.h"
+#include "libimport.h"
 
 void show_stats @,@,@[ARGS((bool))@];@+@t}\6{@>
 @z
@@ -1929,11 +1978,13 @@ a working simulator to separate files of a library.
 @(liblibinit.c@>=
 #include <stdlib.h>
 #include <stdio.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
+#include "libimport.h"
 
 #ifndef MMIX_TRAP
 #include "mmix-io.h"
@@ -1952,12 +2003,14 @@ int mmix_lib_initialize(void)
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "libarith.h"
+#include "libimport.h"
 
 #ifdef WIN32
 #include <windows.h>
@@ -1967,13 +2020,10 @@ BOOL CtrlHandler(DWORD fdwCtrlType);
 void catchint(int n);
 #endif
 
-#include <setjmp.h>
-extern jmp_buf mmix_exit;
 
 int mmix_initialize(void)
 { 
   @<Initialize everything@>;
-  cur_seg.h=cur_seg.l=0; /* the Text segment is current */
   return 0;
 }
 
@@ -1989,14 +2039,13 @@ int mmix_initialize(void)
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "libarith.h"
+#include "libimport.h"
 
-extern jmp_buf mmix_exit;
 extern void dump(mem_node *p);
 extern void dump_tet(tetra t);
 
 void mmix_boot(void)
 { 
-  MMIX_PREBOOT 
   @<Boot the machine@>;
 #ifdef MMIX_BOOT
   loc.h=inst_ptr.h=0x80000000;
@@ -2018,8 +2067,8 @@ int mmix_load_file(char *mmo_file_name)
   if (mmo_file_name!=NULL && mmo_file_name[0]!=0)
   { 
    @<Load object file@>;
-   write_all_data_cache();
-   clear_all_instruction_cache();
+   MMIX_WRITE_DCACHE();
+   MMIX_CLEAR_ICACHE();
   }
   return 0;
 }
@@ -2027,16 +2076,18 @@ int mmix_load_file(char *mmo_file_name)
 @ @(libcommand.c@>=
 #include <stdio.h>
 #include <string.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "libarith.h"
+#include "libimport.h"
 
 int mmix_commandline(int argc, char *argv[])
 { int k;
-  mem_tetra *ll; /* current place in the simulated memory */
+  MMIX_LOCAL_LL
   @<Load the command line arguments@>;
   g[rQ].h=g[rQ].l=new_Q.h=new_Q.l=0; /*hide problems with loading the command line*/
   return 0;
@@ -2046,12 +2097,16 @@ int mmix_commandline(int argc, char *argv[])
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "libarith.h"
+#include "libimport.h"
+
+@<Interact globals@>
 
 static octa scan_hex(char *s, octa offset);
 
@@ -2069,12 +2124,14 @@ end_simulation:
 @ @(libfetch.c@>=
 #include <stdio.h>
 #include <string.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "libarith.h"
+#include "libimport.h"
 
 int mmix_fetch_instruction(void)
 /* return zero if no instruction was loaded */
@@ -2106,11 +2163,13 @@ page_fault:
 #endif
 #include "libconfig.h"
 #include <time.h>
+#include <setjmp.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "libarith.h"
 #include "mmix-io.h"
+#include "libimport.h"
 
 static bool interact_after_resume= false;
 
@@ -2135,11 +2194,13 @@ void mmix_trace(void)
 
 @ @(libdtrap.c@>=
 #include <stdio.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
+#include "libimport.h"
 
 
 void mmix_dynamic_trap(void)
@@ -2158,11 +2219,13 @@ void mmix_profile(void)
 
 @ @(libfinal.c@>=
 #include <stdio.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
+#include "libimport.h"
 
 int mmix_finalize(void)
 { free_file_info();
@@ -2171,25 +2234,30 @@ int mmix_finalize(void)
 
 @ @(liblibfinal.c@>=
 #include <stdio.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
+#include "libimport.h"
 
 int mmix_lib_finalize(void)
 { return 0;
 }
 
+
 @ @(libglobals.c@>=
 #include <stdio.h>
-#include "libconfig.h"
 #include <time.h>
+#include <setjmp.h>
+#include "libconfig.h"
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
 
 @<Global variables@>@;
+jmp_buf mmix_exit;
 
 @ @c
 #include <stdio.h>
@@ -2205,7 +2273,6 @@ int mmix_lib_finalize(void)
 #include "libglobals.h"
 #include "mmixlib.h"
 
-jmp_buf mmix_exit;
 
 int main(argc,argv)
   int argc;
@@ -2220,8 +2287,6 @@ int main(argc,argv)
    goto end_simulation;
   @<Process the command line@>;
   
-  MMIX_AFTER_COMMANDLINE
-
   mmix_initialize();
 
   boot_cur_arg = cur_arg;
@@ -2243,7 +2308,7 @@ boot:
 		if (!mmix_interact()) goto end_simulation;
       }
     }
-    if (MMIX_END) break;
+    if (halted) break;
     do   
     { if (!resuming)
         mmix_fetch_instruction();       
@@ -2255,7 +2320,7 @@ boot:
     } while (resuming || (!interrupt && !breakpoint));
     if (interact_after_break) 
        interacting=true, interact_after_break=false;
-    if (MMIX_REBOOT)
+    if (g[rQ].l&g[rK].l&RE_BIT)
     { breakpoint=true; 
       goto boot;
     }
@@ -2297,8 +2362,8 @@ void scan_option @,@,@[ARGS((char*,bool))@];@+@t}\6{@>
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "mmix-io.h"
+#include "libimport.h"
 
-extern jmp_buf mmix_exit;
 
 void scan_option @,@,@[ARGS((char*,bool))@];@+@t}\6{@>
 @z
@@ -2375,7 +2440,7 @@ BOOL CtrlHandler( DWORD fdwCtrlType )
   }
   else
   { printf("Closing MMIX\n");
-    halted=1;
+    halted=true;
   }
   return TRUE;
 }
@@ -2399,6 +2464,38 @@ void catchint(n)
 @z
 
 @x
+@ @d command_buf_size 1024 /* make it plenty long, for floating point tests */
+
+@<Glob...@>=
+char command_buf[command_buf_size];
+FILE *incl_file; /* file of commands included by `\.i' */
+char cur_disp_mode='l'; /* |'l'| or |'g'| or |'$'| or |'M'| */
+char cur_disp_type='!'; /* |'!'| or |'.'| or |'#'| or |'"'| */
+bool cur_disp_set; /* was the last \.{<t>} of the form \.{=<val>}? */
+octa cur_disp_addr; /* the |h| half is relevant only in mode |'M'| */
+octa cur_seg; /* current segment offset */
+char spec_reg_code[]={rA,rB,rC,rD,rE,rF,rG,rH,rI,rJ,rK,rL,rM,
+      rN,rO,rP,rQ,rR,rS,rT,rU,rV,rW,rX,rY,rZ};
+char spec_regg_code[]={0,rBB,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,rTT,0,0,rWW,rXX,rYY,rZZ};
+@y
+@ @d command_buf_size 1024 /* make it plenty long, for floating point tests */
+
+@<Interact globals@>=
+static char command_buf[command_buf_size];
+static FILE *incl_file; /* file of commands included by `\.i' */
+static char cur_disp_mode='l'; /* |'l'| or |'g'| or |'$'| or |'M'| */
+static char cur_disp_type='!'; /* |'!'| or |'.'| or |'#'| or |'"'| */
+static bool cur_disp_set; /* was the last \.{<t>} of the form \.{=<val>}? */
+static octa cur_disp_addr; /* the |h| half is relevant only in mode |'M'| */
+static octa cur_seg={0,0}; /* current segment offset */
+static char spec_reg_code[]={rA,rB,rC,rD,rE,rF,rG,rH,rI,rJ,rK,rL,rM,
+      rN,rO,rP,rQ,rR,rS,rT,rU,rV,rW,rX,rY,rZ};
+static char spec_regg_code[]={0,rBB,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,rTT,0,0,rWW,rXX,rYY,rZZ};
+@z
+
+@x
 @ @<Subr...@>=
 octa scan_hex @,@,@[ARGS((char*,octa))@];@+@t}\6{@>
 @y
@@ -2413,7 +2510,7 @@ octa scan_hex @,@,@[ARGS((char*,octa))@];@+@t}\6{@>
   }@+break;
 @y
  case 'M':
-  store_octa(val,cur_disp_addr);
+  MMIX_STO(val,cur_disp_addr);
   @+break;
 @z
 
@@ -2425,7 +2522,7 @@ octa scan_hex @,@,@[ARGS((char*,octa))@];@+@t}\6{@>
   }
 @y
  case 'M':
-    load_octa(&aux,cur_disp_addr);
+    MMIX_LDO(aux,cur_disp_addr);
 @z
 
 
@@ -2469,12 +2566,14 @@ void show_breaks @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include <time.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "libarith.h"
+#include "libimport.h"
 
 void show_breaks @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
 @z
@@ -2496,17 +2595,17 @@ x.l=0;@+ll=mem_find(x);@+ll->tet=loc.h, (ll+1)->tet=loc.l;
 @<Load the command line arguments@>=
 x.h=0x60000000, x.l=0x00;
 aux.h=0, aux.l=argc;
-store_octa(aux,x); /* and $\$0=|argc|$ */
+MMIX_STO(aux,x); /* and $\$0=|argc|$ */
 x.h=0x40000000, x.l=0x8;
 aux=incr(x,8*(argc+1));
 for (k=0; k<argc && *argv!=NULL; k++,argv++) {
-  store_octa(aux,x);
+  MMIX_STO(aux,x);
   mmputchars((unsigned char *)*argv,(int)strlen(*argv),aux);
   x.l+=8, aux.l+=8+(tetra)(strlen(*argv)&-8);
 }
 if (argc>0) 
 { x.l=0;
-  store_octa(aux,x);
+  MMIX_STO(aux,x);
 }
 @z
 
@@ -2537,13 +2636,49 @@ void dump @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
 #include <stdio.h>
 #include "libconfig.h"
 #include <time.h>
+#include <setjmp.h>
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "libarith.h"
+#include "libimport.h"
 
 void dump @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
 @z
+
+@x
+  octa cur_loc;
+  if (p->left) dump(p->left);
+  for (j=0;j<512;j+=2) if (p->dat[j].tet || p->dat[j+1].tet) {
+    cur_loc=incr(p->loc,4*j);
+    if (cur_loc.l!=x.l || cur_loc.h!=x.h) {
+      if (x.l!=1) dump_tet(0),dump_tet(0);
+      dump_tet(cur_loc.h);@+dump_tet(cur_loc.l);@+x=cur_loc;
+    }
+    dump_tet(p->dat[j].tet);
+    dump_tet(p->dat[j+1].tet);
+    x=incr(x,8);
+  }
+@y
+  octa cur_loc;
+  octa dat;
+  MMIX_LOCAL_LL
+  if (p->left) dump(p->left);
+  for (j=0;j<512;j+=2) {
+    cur_loc=incr(p->loc,4*j);
+    MMIX_LDO(dat,cur_loc);
+    if (dat.h || dat.l) {
+      if (cur_loc.l!=x.l || cur_loc.h!=x.h) {
+        if (x.l!=1) dump_tet(0),dump_tet(0);
+        dump_tet(cur_loc.h);@+dump_tet(cur_loc.l);@+x=cur_loc;
+      }
+      dump_tet(dat.h);
+      dump_tet(dat.l);
+      x=incr(x,8);
+    }
+  }
+@z
+
 
 @x
 @ @<Sub...@>=

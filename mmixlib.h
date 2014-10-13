@@ -7,7 +7,6 @@ extern void free_tree(trie_node *root);
 #ifndef _MMIXAL_
 extern void free_file_info(void);
 /* reset the file_info and ybyte2file_no information */
-extern int ybyte2file_no[256]; /* mapping internal to external files */
 extern mem_tetra* mem_find(octa addr);
 extern mem_node* new_mem(void);
 extern void mmputchars(unsigned char *buf,int size,octa addr);

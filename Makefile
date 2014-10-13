@@ -60,6 +60,10 @@ mmix-sim: libmmix.a mmix-sim.c
 mmixal: libmmix.a mmixal.c
 	$(CC) $(CFLAGS) mmixal.c -L. -lmmix -o mmixal
 
+.PHONY: TAGS
+TAGS:
+	etags *.c *.h *.ch
+
 clean:
 	rm -f *.o
 	rm -f $(LIBSIM) $(LIBH) $(LIBAL) mmix-arith.c mmix-io.c

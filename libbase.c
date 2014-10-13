@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <setjmp.h>
 #include "libconfig.h"
 #include "libtype.h"
 #include "libglobals.h"
@@ -41,6 +42,5 @@ void free_file_info(void)
     {  free(file_info[i].map);
        file_info[i].map=NULL;
     }
-	ybyte2file_no[i]=-1;
   }
 }

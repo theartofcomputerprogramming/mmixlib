@@ -6,31 +6,28 @@
 #endif
 
 /* define this if you need a local copy of mem_tetra ll */
-#define MMIX_LOCAL_LL  mem_tetra *ll; /* current place in the simulated memory */
-
-#define MMIX_STO(val,addr) (ll=mem_find(addr),ll->tet=(val).h,(ll+1)->tet=(val).l,true)
-#define MMIX_STT(val,addr) (ll=mem_find(addr),ll->tet=(val).l,true)
-#define MMIX_STW(val,addr) (ll=mem_find(addr),ll->tet=(ll->tet&(~(0xFFFF<<((1-((addr).l&0x1))<<4))))|(((val).l&0xFFFF)<<((1-((addr).l&0x1))<<4)),true)
-#define MMIX_STB(val,addr) (ll=mem_find(addr),ll->tet=(ll->tet&(~(0xFF<<((3-((addr).l&0x3))<<3))))|(((val).l&0xFF)<<((3-((addr).l&0x3))<<3)),true)
-
-#define MMIX_LDO(val,addr) (ll=mem_find(addr),(val).h=ll->tet,(val).l=(ll+1)->tet,true)
-#define MMIX_LDT(val,addr) (ll=mem_find(addr),(val).h=0,(val).l=ll->tet,true)
-#define MMIX_LDW(val,addr) (ll=mem_find(addr),(val).h=0,(val).l=(ll->tet>>(16*(1-((addr).l&1))))&0xFFFF,true)
-#define MMIX_LDB(val,addr) (ll=mem_find(addr),(val).h=0,(val).l=(ll->tet>>(8*(3-((addr).l&3))))&0xFF,true)
-
-#define MMIX_STO_UNCACHED(val,addr) MMIX_STO(val,addr) 
-#define MMIX_LDO_UNCACHED(val,addr) MMIX_LDO(val,addr)
+#define MMIX_LOCAL_LL  /* mem_tetra *ll; current place in the simulated memory */
 
 
-#define MMIX_FETCH(inst,loc) (ll=mem_find(loc),inst=ll->tet,true)
-#define  MMIX_STORE_IVTC(virt,phys)
-#define  MMIX_STORE_DVTC(virt,phys)
+#define MMIX_STO(val,addr) store_data(8,val,addr)
+#define MMIX_STT(val,addr) store_data(4,val,addr)
+#define MMIX_STW(val,addr) store_data(2,val,addr)
+#define MMIX_STB(val,addr) store_data(1,val,addr)
 
-#ifdef WIN32
-#define	MMIX_DELAY(ms,d)  (Sleep(ms), d=(ms))
-#else
-#define	MMIX_DELAY(ms,d)  (usleep(1000*(ms)), d=(ms))
-#endif
+#define MMIX_LDO(val,addr)  load_data(8,&(val),addr,0)
+#define MMIX_LDT(val,addr)  load_data(4,&(val),addr,0)
+#define MMIX_LDW(val,addr)  load_data(2,&(val),addr,0)
+#define MMIX_LDB(val,addr)  load_data(1,&(val),addr,0)
+
+#define MMIX_STO_UNCACHED(val,addr) store_data_uncached(8,val,addr) 
+#define MMIX_LDO_UNCACHED(val,addr) load_data_uncached(8,&(val),addr,0)
+
+
+#define MMIX_FETCH(inst,loc) load_instruction(&inst,loc)
+#define MMIX_STORE_IVTC(virt,phys) store_exec_translation(&(virt),&(phys))
+#define MMIX_STORE_DVTC(virt,phys) store_data_translation(&(virt),&(phys))
+
+#define	MMIX_DELAY(ms,d)  d = vmb_wait_for_event_timed(&vmb,ms)
 
 /* define this to check for external asynchronous ineterrupts*/
 #define MMIX_GET_INTERRUPT
@@ -46,10 +43,11 @@
 
 /* this code defines the actions for the strings above */
 #define MMIX_INTERACT_ACTION
+
 /* if MMIX_BOOT is defined, mmis-sim will boot from addres #8000...0000
    otherwise it will resume at Main */
+#define MMIX_BOOT
 
-#undef MMIX_BOOT
 
 #ifdef MMIX_PRINT
 extern int mmix_printf(char *format,...);
@@ -66,7 +64,7 @@ extern int mmix_fputc(int c, FILE *f);
 
 
 /* define this to get the real TRAP implementation not the MMIXWARE fake TRAPS */
-#undef MMIX_TRAP
+#define MMIX_TRAP
 
 /* this is the error display function */
 #define MMIX_ERROR(f,m) fprintf(stderr,f,m)
@@ -74,20 +72,20 @@ extern int mmix_fputc(int c, FILE *f);
 #define MMIX_OPTION_STRING
 
 /* define this if you need the tetra inside the mem_node */
-#define MMIX_MEM_TET tetra tet; /* the tetrabyte of simulated memory */
+#define MMIX_MEM_TET /* tetra tet; the tetrabyte of simulated memory */
 
 /* these are the functions for the instructions not implemented in the basic mmix simulator */
-#define MMIX_WRITE_DCACHE() 
-#define MMIX_CLEAR_ICACHE() 
-#define MMIX_CLEAR_DCACHE() 
-#define MMIX_UPDATE_VTC(w) zero_octa 
-#define MMIX_CLEAR_DVTC() 
-#define MMIX_CLEAR_IVTC() 
-#define MMIX_PRELOAD_DCACHE(w,xx) 
-#define MMIX_PRELOAD_ICACHE(w,xx) 
-#define MMIX_STORE_DCACHE(w,xx) 
-#define MMIX_DELETE_DCACHE(w,xx) 
-#define MMIX_DELETE_ICACHE(w,xx) 
+#define MMIX_WRITE_DCACHE() write_all_data_cache()
+#define MMIX_CLEAR_ICACHE() clear_all_instruction_cache()
+#define MMIX_CLEAR_DCACHE() clear_all_data_cache()
+#define MMIX_UPDATE_VTC(w) update_vtc(w)
+#define MMIX_CLEAR_DVTC() clear_all_data_vtc()
+#define MMIX_CLEAR_IVTC() clear_all_instruction_vtc()
+#define MMIX_PRELOAD_DCACHE(w,xx) preload_data_cache(w,xx)
+#define MMIX_PRELOAD_ICACHE(w,xx) prego_instruction(w,xx)
+#define MMIX_STORE_DCACHE(w,xx) write_data(w,xx)
+#define MMIX_DELETE_DCACHE(w,xx) delete_data(w,xx)
+#define MMIX_DELETE_ICACHE(w,xx) delete_instruction(w,xx)
 
 #define MMXIAL_LINE_TRUNCATED     fprintf(stderr,"(say `-b <number>' to increase the length of my input buffer)\n");
 
