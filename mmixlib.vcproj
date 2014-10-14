@@ -149,14 +149,330 @@
 			<File
 				RelativePath=".\libalerror.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\libbase.c"
 				>
 			</File>
 			<File
+				RelativePath=".\libboot.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libcommand.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libdtrap.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libdump.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libfetch.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libfinal.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libglobals.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libinit.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libinteract.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\liblibfinal.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\liblibinit.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libload.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libmem.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libmmget.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\libmmixal.c"
 				>
+			</File>
+			<File
+				RelativePath=".\libmmput.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\libname.c"
@@ -181,6 +497,174 @@
 						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libprint.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libprofile.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libshowbreaks.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libshowline.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libsoption.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libstats.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libstdin.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libtrace.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\mmix-arith.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mmix-io.c"
+				>
 			</File>
 			<File
 				RelativePath=".\mmix-vmb.c"
@@ -227,6 +711,54 @@
 			Name="w Files"
 			>
 			<File
+				RelativePath=".\mmixware\mmix-arith.w"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="ctangle mmix-arith"
+						CommandLine="ctangle mmixware\mmix-arith.w"
+						Outputs="mmix-arith.c"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="ctangle mmix-arith"
+						CommandLine="ctangle mmixware\mmix-arith.w"
+						Outputs="mmix-arith.c"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\mmixware\mmix-io.w"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="ctangle mmix-io"
+						CommandLine="ctangle mmixware/mmix-io.w"
+						Outputs="mmix-io.c"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="ctangle mmix-io"
+						CommandLine="ctangle mmixware/mmix-io.w"
+						Outputs="mmix-io.c"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\mmixware\mmix-sim.w"
 				>
 				<FileConfiguration
@@ -235,7 +767,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-sim.w with mmixlib.ch"
-						CommandLine="ctangle mmixware/mmix-sim.w mmixlib.ch"
+						CommandLine="ctangle mmixware/mmix-sim.w mmixlib.ch&#x0D;&#x0A;"
 						AdditionalDependencies="mmixlib.ch"
 						Outputs="libtype.h;libprint.c;libarith.h;libmem.c;libload.c;libshowline.c;libprofile.c;mmix-io.h;libmmget.c;libmmput.c;libstdin.c;libtrace.c;libstats.c;liblibinit.c;libinit.c;libboot.c;libcommand.c;libinteract.c;libfetch.c;libperform.c;libdtrap.c;libfinal.c;liblibfinal.c;libglobals.c;libsoption.c;libshowbreaks.c;libdump.c"
 					/>
@@ -246,7 +778,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-sim.w with mmixlib.ch"
-						CommandLine="ctangle mmixware/mmix-sim.w mmixlib.ch"
+						CommandLine="ctangle mmixware/mmix-sim.w mmixlib.ch&#x0D;&#x0A;"
 						AdditionalDependencies="mmixlib.ch"
 						Outputs="libtype.h;libprint.c;libarith.h;libmem.c;libload.c;libshowline.c;libprofile.c;mmix-io.h;libmmget.c;libmmput.c;libstdin.c;libtrace.c;libstats.c;liblibinit.c;libinit.c;libboot.c;libcommand.c;libinteract.c;libfetch.c;libperform.c;libdtrap.c;libfinal.c;liblibfinal.c;libglobals.c;libsoption.c;libshowbreaks.c;libdump.c"
 					/>
@@ -261,7 +793,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmixware\mmixal.w mmixallib.ch"
-						CommandLine="ctangle mmixware\mmixal.w mmixallib.ch"
+						CommandLine="ctangle mmixware\mmixal.w mmixallib.ch&#x0D;&#x0A;"
 						AdditionalDependencies="mmixallib.ch"
 						Outputs="libalerror.c;libmmixal.c"
 					/>
@@ -272,7 +804,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmixware\mmixal.w mmixallib.ch"
-						CommandLine="ctangle mmixware\mmixal.w mmixallib.ch"
+						CommandLine="ctangle mmixware\mmixal.w mmixallib.ch&#x0D;&#x0A;"
 						AdditionalDependencies="mmixallib.ch"
 						Outputs="libalerror.c;libmmixal.c"
 					/>
