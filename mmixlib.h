@@ -1,4 +1,5 @@
 /* auxiliar functions provided by the library  but without a prototype here*/
+
 #if 0
 extern void free_tree(trie_node *root);
 
@@ -101,9 +102,8 @@ extern int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, 
 		   otherwise the number of errors found in the input
 */
 
-extern void mmixal_error(char *message, int file_no, int line_no, int status);
+extern void report_error(char *message, char *filename, int line_no);
 /* report an error in the given file and line. 
-   status is 1 for warnings, 0 for errors, -1 for fatal errors.
  */
 
 extern void add_line_loc(int file_no, int line_no, octa loc);
@@ -119,3 +119,6 @@ extern FILE *src_file, *obj_file, *listing_file;
 extern int expanding; /* are we expanding instructions when base address fail? */
 extern int buf_size; /* maximum number of characters per line of input */
 extern int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option);
+extern int err_count; /* the error count */
+extern bool  line_listed;
+extern void flush_listing_line(char*line);

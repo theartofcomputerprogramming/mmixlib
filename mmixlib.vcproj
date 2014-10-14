@@ -700,6 +700,10 @@
 				RelativePath=".\libimport.h"
 				>
 			</File>
+			<File
+				RelativePath=".\mmixlib.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -719,7 +723,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-arith"
-						CommandLine="ctangle mmixware\mmix-arith.w"
+						CommandLine="ctangle mmixware\mmix-arith.w&#x0D;&#x0A;"
 						Outputs="mmix-arith.c"
 					/>
 				</FileConfiguration>
@@ -729,7 +733,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-arith"
-						CommandLine="ctangle mmixware\mmix-arith.w"
+						CommandLine="ctangle mmixware\mmix-arith.w&#x0D;&#x0A;"
 						Outputs="mmix-arith.c"
 					/>
 				</FileConfiguration>
@@ -743,7 +747,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-io"
-						CommandLine="ctangle mmixware/mmix-io.w"
+						CommandLine="ctangle mmixware/mmix-io.w&#x0D;&#x0A;"
 						Outputs="mmix-io.c"
 					/>
 				</FileConfiguration>
@@ -753,7 +757,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-io"
-						CommandLine="ctangle mmixware/mmix-io.w"
+						CommandLine="ctangle mmixware/mmix-io.w&#x0D;&#x0A;"
 						Outputs="mmix-io.c"
 					/>
 				</FileConfiguration>
@@ -809,6 +813,10 @@
 						Outputs="libalerror.c;libmmixal.c"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\mmixallib.ch"
+				>
 			</File>
 		</Filter>
 	</Files>

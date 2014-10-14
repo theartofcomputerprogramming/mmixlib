@@ -104,7 +104,7 @@ void report_error(message)
 #include <stdio.h>
 #include <setjmp.h>
 
-extern int err_count;
+int err_count;
 extern FILE *listing_file;
 extern void flush_listing_line(char*line);
 typedef enum{false,true}bool;
