@@ -12,6 +12,7 @@
 #include "mmixlib.h"
 #include "address.h"
 #include "mmix-bus.h"
+#include "breaks.h"
 #include "vmb.h"
 device_info vmb = {0};
 static char localhost[]="localhost";
@@ -80,7 +81,7 @@ boot:
       mmix_trace();
       mmix_dynamic_trap();
       if (resuming && op!=RESUME) resuming=false; 
-      if (!resuming && MMIX_BREAK_LOOP) break; 
+      if (!resuming && (!vmb.power||!vmb.reset)) break; 
     } while (resuming || (!interrupt && !breakpoint));
     if (interact_after_break) 
        interacting=true, interact_after_break=false;

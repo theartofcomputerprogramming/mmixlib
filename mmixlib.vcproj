@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="mmixlib"
-	ProjectGUID="{4CE6E4D2-F64A-42C0-A1E2-7CC6D9ECC7BE}"
+	ProjectGUID="{DACDA282-D702-41D2-B95C-81BF27E05DE0}"
 	RootNamespace="mmixlib"
 	Keyword="Win32Proj"
 	>
@@ -24,8 +24,6 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				Description="Ctangle mmix-vmb.c and mmix-arith.c"
-				CommandLine="ctangle mmix-sim.w vmb.ch mmix-vmb.c&#x0D;&#x0A;ctangle mmix-arith.w arith-win.ch mmix-arith.c&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -42,7 +40,6 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../util;../opt;../vmbmmixlib"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -90,8 +87,6 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				Description="Ctangle mmix-vmb.c and mmix-arith.c"
-				CommandLine="ctangle mmix-sim.w vmb.ch mmix-vmb.c&#x0D;&#x0A;ctangle mmix-arith.w arith-win.ch mmix-arith.c&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -107,7 +102,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../util;../opt;../vmbmmixlib"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -153,14 +147,30 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\mmix-arith.c"
+				RelativePath=".\libalerror.c"
+				>
+			</File>
+			<File
+				RelativePath=".\libbase.c"
+				>
+			</File>
+			<File
+				RelativePath=".\libmmixal.c"
+				>
+			</File>
+			<File
+				RelativePath=".\libname.c"
+				>
+			</File>
+			<File
+				RelativePath=".\libperform.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						PreprocessorDefinitions="MMIXLIB"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -168,17 +178,9 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						PreprocessorDefinitions="MMIXLIB"
+						AdditionalIncludeDirectories="C:\home\vmb\src\vmbmmixlib;C:\home\vmb\src\util"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\mmix-arith.w"
-				>
-			</File>
-			<File
-				RelativePath=".\mmix-sim.w"
-				>
 			</File>
 			<File
 				RelativePath=".\mmix-vmb.c"
@@ -188,7 +190,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						PreprocessorDefinitions="MMIXLIB"
+						AdditionalIncludeDirectories="C:\home\vmb\src\util;C:\home\vmb\src\vmbmmixlib"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -196,13 +198,9 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						PreprocessorDefinitions="MMIXLIB"
+						AdditionalIncludeDirectories="C:\home\vmb\src\util;C:\home\vmb\src\vmbmmixlib"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\vmb.ch"
-				>
 			</File>
 		</Filter>
 		<Filter
@@ -210,6 +208,14 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\vmb\address.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libimport.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -217,10 +223,62 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
-		<File
-			RelativePath=".\ReadMe.txt"
+		<Filter
+			Name="w Files"
 			>
-		</File>
+			<File
+				RelativePath=".\mmixware\mmix-sim.w"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="ctangle mmix-sim.w with mmixlib.ch"
+						CommandLine="ctangle mmixware/mmix-sim.w mmixlib.ch"
+						AdditionalDependencies="mmixlib.ch"
+						Outputs="libtype.h;libprint.c;libarith.h;libmem.c;libload.c;libshowline.c;libprofile.c;mmix-io.h;libmmget.c;libmmput.c;libstdin.c;libtrace.c;libstats.c;liblibinit.c;libinit.c;libboot.c;libcommand.c;libinteract.c;libfetch.c;libperform.c;libdtrap.c;libfinal.c;liblibfinal.c;libglobals.c;libsoption.c;libshowbreaks.c;libdump.c"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="ctangle mmix-sim.w with mmixlib.ch"
+						CommandLine="ctangle mmixware/mmix-sim.w mmixlib.ch"
+						AdditionalDependencies="mmixlib.ch"
+						Outputs="libtype.h;libprint.c;libarith.h;libmem.c;libload.c;libshowline.c;libprofile.c;mmix-io.h;libmmget.c;libmmput.c;libstdin.c;libtrace.c;libstats.c;liblibinit.c;libinit.c;libboot.c;libcommand.c;libinteract.c;libfetch.c;libperform.c;libdtrap.c;libfinal.c;liblibfinal.c;libglobals.c;libsoption.c;libshowbreaks.c;libdump.c"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\mmixware\mmixal.w"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="ctangle mmixware\mmixal.w mmixallib.ch"
+						CommandLine="ctangle mmixware\mmixal.w mmixallib.ch"
+						AdditionalDependencies="mmixallib.ch"
+						Outputs="libalerror.c;libmmixal.c"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="ctangle mmixware\mmixal.w mmixallib.ch"
+						CommandLine="ctangle mmixware\mmixal.w mmixallib.ch"
+						AdditionalDependencies="mmixallib.ch"
+						Outputs="libalerror.c;libmmixal.c"
+					/>
+				</FileConfiguration>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

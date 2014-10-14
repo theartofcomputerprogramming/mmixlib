@@ -1,16 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mmixlib", "mmixlib.vcproj", "{4CE6E4D2-F64A-42C0-A1E2-7CC6D9ECC7BE}"
-	ProjectSection(ProjectDependencies) = postProject
-		{D49D454B-0839-4606-850D-03A6231DB2DA} = {D49D454B-0839-4606-850D-03A6231DB2DA}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "abstime", "abstime.vcproj", "{D49D454B-0839-4606-850D-03A6231DB2DA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mmixlib", "mmixlib.vcproj", "{DACDA282-D702-41D2-B95C-81BF27E05DE0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DACDA282-D702-41D2-B95C-81BF27E05DE0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DACDA282-D702-41D2-B95C-81BF27E05DE0}.Debug|Win32.Build.0 = Debug|Win32
+		{DACDA282-D702-41D2-B95C-81BF27E05DE0}.Release|Win32.ActiveCfg = Release|Win32
+		{DACDA282-D702-41D2-B95C-81BF27E05DE0}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
