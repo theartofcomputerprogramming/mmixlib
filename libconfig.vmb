@@ -61,7 +61,7 @@ if (vmb_get_interrupt(&vmb,&new_Q.h,&new_Q.l)==1) \
    otherwise it will resume at Main */
 #define MMIX_BOOT
 
-#define MMIX_PRINT
+#undef MMIX_PRINT
 
 #ifdef MMIX_PRINT
 extern int mmix_printf(char *format,...);

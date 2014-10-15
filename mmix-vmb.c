@@ -15,9 +15,9 @@
 #include "breaks.h"
 #include "vmb.h"
 device_info vmb = {0};
-static char localhost[]="localhost";
-static int busport=9002; /* on which port to connect to the bus */
-static char *bushost=localhost; /* on which host to connect to the bus */
+char localhost[]="localhost";
+int port=9002; /* on which port to connect to the bus */
+char *host=localhost; /* on which host to connect to the bus */
 
 
 int main(argc,argv)
@@ -33,8 +33,8 @@ int main(argc,argv)
   mmix_lib_initialize();
   mmix_commandline(argc,argv);
 
-  if (bushost==NULL) panic("No Bus given. Use Option -B[host:]port");
-  init_mmix_bus(bushost,busport,"MMIX CPU");
+  if (host==NULL) panic("No Bus given. Use Option -B[host:]port");
+  init_mmix_bus(host,port,"MMIX CPU");
 
   mmix_initialize();
  
@@ -64,7 +64,7 @@ boot:
   mmix_commandline(argc, argv);
   write_all_data_cache();
   clear_all_instruction_cache();
-  if (interacting) set_break(g[rWW],exec_bit);
+  if (interacting) mem_find(g[rWW])->bkpt|=exec_bit;
 
   while (true) {
     if (interrupt && !breakpoint) breakpoint=interacting=true, interrupt=false;

@@ -1,6 +1,7 @@
 # the directory with the MMIXware sources 
 MMIXWARE=./mmixware
-INCLUDES=-I ../../vmb/src/util -I ../../vmb/src/vmbmmixlib
+INCLDIR=-I ../../vmb/src/util -I ../../vmb/src/vmbmmixlib
+LIBDIR=-L. -L../../vmb/src/util -L../../vmb/src/vmbmmixlib
 
 LIBSIM=	libboot.c     libfinal.c     libload.c     libprint.c       libstats.c \
 	libcommand.c  libinit.c      libmem.c      libprofile.c     libtrace.c \
@@ -17,7 +18,7 @@ LIBSRC= libname.c libbase.c
 LIBOBJ= $(LIBSIM:.c=.o) $(LIBAL:.c=.o) $(LIBSRC:.c=.o) mmix-arith.o mmix-io.o
 
 CC= gcc
-CFLAGS= -Wall -ggdb -O0 $(INCLUDES)
+CFLAGS= -Wall -ggdb -O0 $(INCLDIR) $(LIBDIR)
 AR = ar
 ARFLAGS = cru
 RANLIB = ranlib
@@ -59,6 +60,10 @@ libmmix.a: $(LIBOBJ)
 
 mmix-sim: libmmix.a mmix-sim.c
 	$(CC) $(CFLAGS) mmix-sim.c -L. -lmmix -o mmix-sim
+
+mmixcpu: libmmix.a mmix-vmb.c
+	$(CC) $(CFLAGS) mmix-vmb.c  -lmmix -lvmbmmix -lvmb -lpthread -o mmixcpu
+
 
 mmixal: libmmix.a mmixal.c
 	$(CC) $(CFLAGS) mmixal.c -L. -lmmix -o mmixal
