@@ -58,8 +58,8 @@ libmmix.a: $(LIBOBJ)
 	$(AR) $(ARFLAGS) $@ $(LIBOBJ)
 	$(RANLIB) $@
 
-mmix-sim: libmmix.a mmix-sim.c
-	$(CC) $(CFLAGS) mmix-sim.c -L. -lmmix -o mmix-sim
+mmix: libmmix.a mmix-sim.c
+	$(CC) $(CFLAGS) mmix-sim.c -L. -lmmix -o mmix
 
 mmixcpu: libmmix.a mmix-vmb.c
 	$(CC) $(CFLAGS) mmix-vmb.c  -lmmix -lvmbmmix -lvmb -lpthread -o mmixcpu
@@ -76,5 +76,5 @@ clean:
 	rm -f *.o
 	rm -f $(LIBSIM) $(LIBH) $(LIBAL) mmix-arith.c mmix-io.c
 	rm -f *~ *.tmp
-	rm -f libmmix.a mmix-sim
+	rm -f libmmix.a mmix
 	rm -f mmix-sim.c mmixal.c
