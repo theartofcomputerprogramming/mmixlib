@@ -666,26 +666,6 @@
 				RelativePath=".\mmix-io.c"
 				>
 			</File>
-			<File
-				RelativePath=".\mmix-vmb.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="C:\home\vmb\src\util;C:\home\vmb\src\vmbmmixlib"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="C:\home\vmb\src\util;C:\home\vmb\src\vmbmmixlib"
-					/>
-				</FileConfiguration>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -697,7 +677,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\libconfig.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libglobals.h"
+				>
+			</File>
+			<File
 				RelativePath=".\libimport.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libtype.h"
 				>
 			</File>
 			<File
@@ -727,7 +719,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-arith with arith-win changefile"
-						CommandLine="ctangle mmixware\mmix-arith.w arith-win.ch"
+						CommandLine="ctangle mmixware\mmix-arith.w arith-win.ch&#x0D;&#x0A;"
 						Outputs="mmix-arith.c"
 					/>
 				</FileConfiguration>
@@ -737,7 +729,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-arith with arith-win changefile"
-						CommandLine="ctangle mmixware\mmix-arith.w arith-win.ch"
+						CommandLine="ctangle mmixware\mmix-arith.w arith-win.ch&#x0D;&#x0A;"
 						Outputs="mmix-arith.c"
 					/>
 				</FileConfiguration>
@@ -751,7 +743,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-io with io-win.ch"
-						CommandLine="ctangle mmixware\mmix-io.w io-win.ch"
+						CommandLine="ctangle mmixware\mmix-io.w io-win.ch&#x0D;&#x0A;"
 						Outputs="mmix-io.c"
 					/>
 				</FileConfiguration>
@@ -761,7 +753,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-io with io-win.ch"
-						CommandLine="ctangle mmixware\mmix-io.w io-win.ch"
+						CommandLine="ctangle mmixware\mmix-io.w io-win.ch&#x0D;&#x0A;"
 						Outputs="mmix-io.c"
 					/>
 				</FileConfiguration>
@@ -820,6 +812,10 @@
 			</File>
 			<File
 				RelativePath=".\mmixallib.ch"
+				>
+			</File>
+			<File
+				RelativePath=".\mmixlib.ch"
 				>
 			</File>
 		</Filter>

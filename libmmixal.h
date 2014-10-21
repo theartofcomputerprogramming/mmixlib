@@ -23,7 +23,7 @@
 
 #ifndef LIBMMIXAL_H
 #define LIBMMIXAL_H
-
+#include "mmixlib.h"
 /* types and definitions from mmixal */
 
 typedef struct sym_tab_struct{
@@ -51,11 +51,8 @@ short code;
 int bits;
 }op_spec;
 
-typedef enum{
-SET= 0x100,IS,LOC,PREFIX,BSPEC,ESPEC,GREG,LOCAL,
-BYTE,WYDE,TETRA,OCTA}pseudo_op;
 
-//extern trie_node *trie_root; 
+extern trie_node *trie_root; 
 //extern sym_node*sym_avail;
 #define DEFINED (sym_node*)1     /* link value for octabyte equivalents */
 #define REGISTER (sym_node*) 2   /* link value for register equivalents */

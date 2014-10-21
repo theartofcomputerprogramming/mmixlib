@@ -14,7 +14,8 @@ the subroutine.
 @<Preprocessor definitions@>=
 @y
 @<Sub...@>=
-#include "mmixlib.h"
+extern void add_line_loc(int file_no, int line_no, octa loc);
+
 
 @ @<Global...@>=
 #include <setjmp.h>
@@ -307,6 +308,7 @@ int main(argc,argv)
 #include <time.h> 
 #include <setjmp.h>
 #include "libconfig.h"
+#include "libimport.h"
 @#
 @h
 @<Preprocessor definitions@>@;

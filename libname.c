@@ -9,7 +9,7 @@
 
 #include <setjmp.h>
 #include "libname.h"
-
+extern jmp_buf mmix_exit;
 /* simple implementation of the identity mapping */
 
 

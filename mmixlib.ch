@@ -6,6 +6,7 @@ Types and preprocessor macros go into libtype.h
 @y
 @ @(libtype.h@>=
 @h
+#define _LIBTYPE_H_
 @<Preprocessor macros@>@;
 @<Type declarations@>@;
 
@@ -2468,6 +2469,18 @@ void catchint(n)
 @y
  interact: @<Put a new command in |command_buf|@>;
  MMIX_GET_INTERRUPT  
+@z
+
+@x
+  case '-': k=strlen(p);@+if (p[k-1]=='\n') p[k-1]='\0';
+@y
+  case '-': k=(int)strlen(p);@+if (p[k-1]=='\n') p[k-1]='\0';
+@z
+
+@x
+  default: what_say: k=strlen(command_buf);
+@y
+  default: what_say: k=(int)strlen(command_buf);
 @z
 
 @x

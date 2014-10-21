@@ -101,9 +101,9 @@ extern int mmix_fputc(int c, FILE *f);
 
 /* MMIXAL has its own notion of file numbers as embedded in the mmo file
    we might want to convert this to a global file number */
-#define MMIX_FILE_NO(file_no) (file_no)
+#define MMIX_FILE_NO(file_no) filename2file(filename[file_no], file_no)
 
 /* define this to record file line and location associations while assembling */
-#define MMIXAL_LINE_LOC(file_no,line_no,cur_loc)
+#define MMIXAL_LINE_LOC(file_no,line_no,cur_loc) add_line_loc(file_no,line_no,cur_loc)
 
 #endif
