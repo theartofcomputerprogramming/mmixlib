@@ -25,7 +25,6 @@ jmp_buf mmixal_exit;
 #ifdef WIN32
 #pragma warning(disable : 4996)
 #endif
-#define _MMIXAL_
 @z
 
 We change error messages that handle errors in the command line 
@@ -43,8 +42,43 @@ The filenames in mmixal are considered local.
 @x
 Char *filename[257];
 @y
-static Char *filename[257];
 @z
+
+@x
+    if (!filename[filename_count]) {
+      filename[filename_count]=(Char*)calloc(FILENAME_MAX+1,sizeof(Char));
+      if (!filename[filename_count])
+        panic("Capacity exceeded: Out of filename memory");
+@.Capacity exceeded...@>
+    }
+    for (p++,k=0;*p && *p!='\"' && k<FILENAME_MAX; p++,k++)
+      filename[filename_count][k]=*p;
+@y
+    Char filename[FILENAME_MAX+1];
+    for (p++,k=0;*p && *p!='\"' && k<FILENAME_MAX; p++,k++)
+      filename[k]=*p;
+@z
+
+@x
+      filename[filename_count][k]='\0';
+      for (k=0;strcmp(filename[k],filename[filename_count])!=0;k++);
+      if (k==filename_count) {
+        if (filename_count==256)
+          panic("Capacity exceeded: More than 256 file names");
+        filename_count++;
+      }
+      cur_file=k;
+@y
+      filename[k]='\0';
+      cur_file= filename2file(filename);
+      if (cur_file<0) panic("Capacity exceeded: More than 256 file names");
+@z
+
+
+
+
+
+
 
 The error reporting goes into a separate file, because we might want
 to change it.
@@ -59,14 +93,14 @@ to change it.
 @d dpanic(m,p) {@+err_buf[0]='!';@+sprintf(err_buf+1,m,p);@+
                                           report_error(err_buf);@+}
 @y
-@d err(m) {@+report_error(m,filename[cur_file],line_no);@+if (m[0]!='*') goto bypass;@+}
+@d err(m) {@+report_error(m,cur_file,line_no);@+if (m[0]!='*') goto bypass;@+}
 @d derr(m,p) {@+sprintf(err_buf,m,p);
-   report_error(err_buf,filename[cur_file],line_no);@+if (err_buf[0]!='*') goto bypass;@+}
+   report_error(err_buf,cur_file,line_no);@+if (err_buf[0]!='*') goto bypass;@+}
 @d dderr(m,p,q) {@+sprintf(err_buf,m,p,q);
-   report_error(err_buf,filename[cur_file],line_no);@+if (err_buf[0]!='*') goto bypass;@+}
-@d panic(m) {@+sprintf(err_buf,"!%s",m);@+report_error(err_buf,filename[cur_file],line_no);@+}
+   report_error(err_buf,cur_file,line_no);@+if (err_buf[0]!='*') goto bypass;@+}
+@d panic(m) {@+sprintf(err_buf,"!%s",m);@+report_error(err_buf,cur_file,line_no);@+}
 @d dpanic(m,p) {@+err_buf[0]='!';@+sprintf(err_buf+1,m,p);@+
-                                          report_error(err_buf,filename[cur_file],line_no);@+}
+                                          report_error(err_buf,cur_file,line_no);@+}
 @z
 
 
@@ -104,6 +138,7 @@ void report_error(message)
 #include <stdlib.h>
 #include <stdio.h>
 #include <setjmp.h>
+#define _MMIXAL_
 
 int err_count;
 extern FILE *listing_file;
@@ -112,8 +147,9 @@ typedef enum{false,true}bool;
 extern bool line_listed;
 extern jmp_buf mmixal_exit;
 
-void report_error(char *message,char *filename,int line_no)
-{
+void report_error(char *message,int file_no,int line_no)
+{ char *filename;
+  filename=file2name(file_no);
   if (!filename) filename="(nofile)";
   if (message[0]=='*')
     fprintf(stderr,"\"%s\", line %d warning: %s\n",
@@ -137,6 +173,46 @@ void report_error(char *message,char *filename,int line_no)
   }
   if (message[0]=='!') longjmp(mmixal_exit,-2);
 }
+@z
+
+in mmo sync we map global file numbers
+to local filenumbers that go into the mmo file.
+First files that have already been passed. The
+local file number is in filename_passed.
+@x
+    if (filename_passed[cur_file]) mmo_lop(lop_file,cur_file,0);
+@y
+    if (filename_passed[cur_file]>=0) mmo_lop(lop_file,filename_passed[cur_file],0);
+@z
+
+@x
+      mmo_lop(lop_file,cur_file,(strlen(filename[cur_file])+3)>>2);
+      for (j=0,p=filename[cur_file];*p;p++,j=(j+1)&3) {
+        mmo_buf[j]=*p;
+        if (j==3) mmo_out();
+      }
+      if (j) {
+        for (;j<4;j++) mmo_buf[j]=0;
+        mmo_out();
+      }
+    filename_passed[cur_file]=1;
+@y
+	  Char *filename;
+      if (filename_count>=256)
+        panic("Capacity exceeded: More than 256 file names");
+	  filename_passed[cur_file]=filename_count;
+	  filename_count++;
+	  filename=file2filename(cur_file);
+	  if (filename==NULL) panic("Unknown file name");
+      mmo_lop(lop_file,filename_passed[cur_file],(strlen(filename)+3)>>2);
+      for (j=0,p=filename;*p;p++,j=(j+1)&3) {
+        mmo_buf[j]=*p;
+        if (j==3) mmo_out();
+      }
+      if (j) {
+        for (;j<4;j++) mmo_buf[j]=0;
+        mmo_out();
+      }
 @z
 
 In the assemble subroutine, we have the
@@ -213,7 +289,7 @@ normal error reporting function.
   err_count++;
 @y
   sprintf(err_buf,"undefined symbol: %s",sym_buf+1);
-  report_error(err_buf,filename[cur_file],line_no);
+  report_error(err_buf,cur_file,line_no);
 @z
 
 when a sym_node becomes DEFINED, we record file and line.
@@ -222,7 +298,7 @@ when a sym_node becomes DEFINED, we record file and line.
   @<Find the symbol table node, |pp|@>;
 @y
   @<Find the symbol table node, |pp|@>;
-  pp->file_no=MMIX_FILE_NO(cur_file);
+  pp->file_no=cur_file;
   pp->line_no=line_no;  
 @z
 
@@ -279,6 +355,9 @@ int main(argc,argv)
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#define _MMIXAL_
+#include "libconfig.h"
+#include "mmixlib.h"
 
 @#
 extern int expanding;
@@ -287,7 +366,7 @@ extern char*src_file_name;
 extern char obj_file_name[FILENAME_MAX+1];
 extern char listing_name[FILENAME_MAX+1];
 
-extern void report_error(char * message, char *filename, int line_no);
+extern void report_error(char * message, int file_no, int line_no);
 extern int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option);
 @#
 int main(argc,argv)
@@ -307,17 +386,21 @@ int main(argc,argv)
 #include <string.h>
 #include <time.h> 
 #include <setjmp.h>
+#define _MMIXAL_
 #include "libconfig.h"
 #include "libimport.h"
+
+
 @#
 @h
 @<Preprocessor definitions@>@;
 @<Type definitions@>@;
 @<Global variables@>@;
 
-extern void report_error(char * message, char *filename, int line_no);
+extern void report_error(char * message, int file_no, int line_no);
 extern jmp_buf mmixal_exit;
-
+extern char *file2filename(int file_no);
+extern int filename2file(char *filename);
 @<Subroutines@>@;
 
 @#
@@ -354,6 +437,7 @@ int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_o
   mmo_ptr=0;
   err_count=0;
   serial_number=0;
+  for (j=0;j<256;j++) filename_passed[j]=-1;
   filename_count=0;
   for (j=0;j<10;j++)
   { forward_local[j].link=0;
@@ -377,6 +461,15 @@ int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_o
 }
 @z
 
+@x
+filename[0]=src_file_name;
+filename_count=1;
+@y
+cur_file=filename2file(src_file_name);
+filename_count=0;
+@z
+
+
 We end with return or longjmp instead of exit.
 
 @x
@@ -389,7 +482,7 @@ exit(err_count);
   if (err_count>0){
     if (err_count>1) sprintf(err_buf,"(%d errors were found.)",err_count);
     else sprintf(err_buf,"(One error was found.)");
-    report_error(err_buf,filename[cur_file],line_no);
+    report_error(err_buf,cur_file,line_no);
   }
 clean_up:
   if (listing_file!=NULL) 
@@ -419,13 +512,7 @@ clean_up:
   free(err_buf);err_buf=NULL;
   free(op_stack); op_stack=NULL;
   free(val_stack);val_stack=NULL;
-  filename[0]=NULL;
-  filename_passed[0]=0;
-  for (j=1;j<filename_count;j++)
-  { free(filename[j]);
-    filename[j]=NULL;
-    filename_passed[j]=0;
-  }
+
   filename_count=0;
   
 return err_count;
@@ -439,6 +526,6 @@ usual error reporting.
   err_count++,fprintf(stderr,"undefined local symbol %dF\n",j);
 @y
   { sprintf(err_buf,"undefined local symbol %dF",j);
-    report_error(err_buf,filename[cur_file],line_no);
+    report_error(err_buf,cur_file,line_no);
   }
 @z

@@ -2,37 +2,45 @@
 #include <stdio.h>
 #include <string.h>
 #include <setjmp.h>
-#include "libconfig.h"
 #include <time.h>
+#include "libconfig.h"
 #include "libtype.h"
 #include "libglobals.h"
-
 #include <setjmp.h>
 #include "libname.h"
 extern jmp_buf mmix_exit;
 /* simple implementation of the identity mapping */
 
+#define NUM_FILES 0x100
+static char *filenames[NUM_FILES]={NULL};
+static char file_no_bound= 0;
 
-int filename2file(char *filename, int c)
-{ if (file_info[c].name==NULL)/* the usual case */
-  { file_info[c].name = filename;
-    return c;
+int filename2file(char *filename)
+{ int file_no;
+  file_no=0;
+  while(file_no<file_no_bound)
+  { if (filenames[file_no]!=NULL && strcmp(filenames[file_no],filename)==0)
+      return file_no;
+    file_no++;
   }
-  else if (strcmp(file_info[c].name,filename)==0) /* the other usual case */
-  { free(filename);
-    return c;
+  if (file_no>=NUM_FILES)
+  { MMIX_ERROR("Too many open files (%s)!\n",filename);  
+    return -1;
   }
-  MMIX_ERROR("ybyte does not match filename %s!\n",filename);
-  free(filename);
-  longjmp(mmix_exit,-6);
-  return 0;
+  filenames[file_no]=malloc(strlen(filename)+1);
+  if (filenames[file_no]==NULL)
+  { MMIX_ERROR("Out of memory for filename (%s)!\n",filename);  
+    return -1;
+  }
+  strcpy(filenames[file_no],filename);
+  if (file_no>=file_no_bound) file_no_bound= file_no+1;
+  return file_no;
 }
 
-/* convert a ybyte to a valid index into file_info,
-   return -1; if there is no valid file_info entry for this ybyte */
-int ybyte2file(int c)
-{ if (file_info[c].name)
-    return c;
-  else
-    return -1;
+char *file2filename(int file_no)
+{ 
+  if (file_no<0 || file_no>=NUM_FILES) 
+	   return NULL;
+   else
+	   return filenames[file_no];
 }

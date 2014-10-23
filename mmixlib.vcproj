@@ -689,6 +689,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\libname.h"
+				>
+			</File>
+			<File
 				RelativePath=".\libtype.h"
 				>
 			</File>
@@ -720,6 +724,7 @@
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-arith with arith-win changefile"
 						CommandLine="ctangle mmixware\mmix-arith.w arith-win.ch&#x0D;&#x0A;"
+						AdditionalDependencies="mmix-arith.ch"
 						Outputs="mmix-arith.c"
 					/>
 				</FileConfiguration>

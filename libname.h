@@ -1,4 +1,4 @@
 
-extern int filename2file(char *filename, int c);
-extern int ybyte2file(int c);
+extern int filename2file(char *filename);
+extern char *file2filename(int file_no);
 

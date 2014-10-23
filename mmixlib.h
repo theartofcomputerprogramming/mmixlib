@@ -179,7 +179,7 @@ extern void mmix_profile(void);
 extern void show_stats(bool verbose);
 /* show statistics */
 
-extern int mmix_printf(char *format,...);
+extern int mmix_printf(FILE *f, char *format,...);
 /* printf replacement */
 extern int mmix_fputc(int c, FILE *f);
 /* fputc replacement */
@@ -242,7 +242,7 @@ extern int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, 
 		   otherwise the number of errors found in the input
 */
 
-extern void report_error(char *message, char *filename, int line_no);
+extern void report_error(char *message, int file_no, int line_no);
 /* report an error in the given file and line. 
  */
 
@@ -261,4 +261,7 @@ extern int buf_size; /* maximum number of characters per line of input */
 extern int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option);
 extern int err_count; /* the error count */
 extern void flush_listing_line(char*line);
+
+extern char *file2filename(int file_no);
+extern int filename2file(char *filename);
 #endif

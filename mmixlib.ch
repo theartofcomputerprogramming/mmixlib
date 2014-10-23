@@ -293,9 +293,9 @@ case lop_file:@+if (file_info[ybyte].name) {
    cur_file=ybyte;
 @y
 case lop_file:
-   if (ybyte2file(ybyte)>=0) {
+   if (ybyte2file[ybyte]>=0) {
    if (zbyte) mmo_err;
-   cur_file=ybyte2file(ybyte);
+   cur_file=ybyte2file[ybyte];
 @z
 
 Now we handle new files.
@@ -316,17 +316,14 @@ Now we handle new files.
  }
 @y
  }@+else {
-   char *name;
    if (!zbyte) mmo_err;
-   name=(char*)calloc(4*zbyte+1,1);
-   if (!name) {
-     MMIX_ERROR("%s","No room to store the file name!\n");@+longjmp(mmix_exit,-5);
-   }   
-   for (j=zbyte,p=name; j>0; j--,p+=4) {
+   if (4*zbyte+1>FILENAME_MAX) mmo_err;
+   for (j=zbyte,p=filename; j>0; j--,p+=4) {
      read_tet();
      *p=buf[0];@+*(p+1)=buf[1];@+*(p+2)=buf[2];@+*(p+3)=buf[3];
    }
-   cur_file=filename2file(name,ybyte);
+   cur_file=filename2file(filename);
+   ybyte2file[ybyte]=cur_file;
  }
 @z
 
@@ -1289,7 +1286,7 @@ case SWYM:
      n=mmgetchars((unsigned char *)buf,256,b,0);
      buf[n]=0;
      if (n>6 && strncmp(buf,"DEBUG ",6)==0) 
-     { fprintf(stdout,"\n%s!\n",buf+6);
+     { printf("\n%s!\n",buf+6);
        sprintf(rhs,"rF=#%08X%08X\n",g[rF].h, g[rF].l);
        tracing= true;
      }
@@ -2077,7 +2074,11 @@ int mmix_load_file(char *mmo_file_name)
 { int j; /* miscellaneous indices */
   mem_tetra *ll; /* current place in the simulated memory */
   char *p; /* current place in a string */
+  static char filename[FILENAME_MAX];
+  static int ybyte2file[256];
   free_file_info();
+  for (j=0;j<256;j++) ybyte2file[j]=-1;
+  postamble=0;
   if (mmo_file_name!=NULL && mmo_file_name[0]!=0)
   { 
    @<Load object file@>;
