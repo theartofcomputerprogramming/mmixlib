@@ -715,6 +715,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\io-win.ch"
+				>
+			</File>
+			<File
 				RelativePath=".\mmixware\mmix-arith.w"
 				>
 				<FileConfiguration
@@ -747,8 +751,9 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="ctangle mmix-io with io-win.ch"
-						CommandLine="ctangle mmixware\mmix-io.w io-win.ch&#x0D;&#x0A;"
+						Description="ctangle mmix-io with libio.ch"
+						CommandLine="ctangle mmixware\mmix-io.w libio.ch"
+						AdditionalDependencies="libio.ch"
 						Outputs="mmix-io.c"
 					/>
 				</FileConfiguration>
@@ -757,8 +762,9 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="ctangle mmix-io with io-win.ch"
-						CommandLine="ctangle mmixware\mmix-io.w io-win.ch&#x0D;&#x0A;"
+						Description="ctangle mmix-io with libio.ch"
+						CommandLine="ctangle mmixware\mmix-io.w libio.ch"
+						AdditionalDependencies="libio.ch"
 						Outputs="mmix-io.c"
 					/>
 				</FileConfiguration>

@@ -669,7 +669,7 @@ if (!l)  panic("No room for the local registers");
 sclock.l=sclock.h=0;
 profile_started=false;
 halted=false;
-stdin_buf_start=stdin_buf_end=NULL;
+stdin_buf_start=stdin_buf_end=stdin_buf;
 good_guesses=bad_guesses=0;
 profiling=false;
 interrupt=false;
@@ -901,8 +901,7 @@ case STB: case STBI: case STBU: case STBUI:@/
  }
  if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
  if (!MMIX_STB(b,w)) goto page_fault;
- ll=mem_find(w); test_store_bkpt(ll);
- break;
+ goto fin_st;
 @z
 
 @x
@@ -916,8 +915,7 @@ case STW: case STWI: case STWU: case STWUI:@/
  }
  if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
  if (!MMIX_STW(b,w)) goto page_fault;
- ll=mem_find(w); test_store_bkpt(ll);
- break;
+ goto fin_st;
 @z
 
 @x
@@ -939,7 +937,10 @@ case STT: case STTI: case STTU: case STTUI:@/
 fin_pst:
  if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
  if (!MMIX_STT(b,w)) goto page_fault;
+fin_st:
  ll=mem_find(w); test_store_bkpt(ll);
+ w.l&=-8;@+ll=mem_find(w);
+ a.h=ll->tet;@+ a.l=(ll+1)->tet; /* for trace output */
  break;
 @z
 
@@ -1617,8 +1618,6 @@ char stdin_chr @,@,@[ARGS((void))@];@+@t}\6{@>
 
 char stdin_chr @,@,@[ARGS((void))@];@+@t}\6{@>
 @z
-
-
 
 
 @x
