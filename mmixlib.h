@@ -118,7 +118,7 @@ extern void mmputchars(unsigned char *buf,int size,octa addr);
 extern int mmgetchars(unsigned char *buf, int size, octa addr, int stop);
 
 
-
+extern FILE*fake_stdin;
 
 extern mem_tetra* mem_find(octa addr);
 extern mem_node*mem_root;
@@ -233,7 +233,8 @@ extern void mmix_status(int status);
 
 #endif
 
-
+/* function from mmix-io */
+void mmix_fake_stdin(FILE *f);
 /* functions that mmixal provides */
 
 extern int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option);

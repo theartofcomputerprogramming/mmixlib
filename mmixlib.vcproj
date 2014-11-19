@@ -715,7 +715,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\io-win.ch"
+				RelativePath=".\libio.ch"
 				>
 			</File>
 			<File
@@ -752,7 +752,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-io with libio.ch"
-						CommandLine="ctangle mmixware\mmix-io.w libio.ch"
+						CommandLine="ctangle mmixware\mmix-io.w libio.ch&#x0D;&#x0A;"
 						AdditionalDependencies="libio.ch"
 						Outputs="mmix-io.c"
 					/>
@@ -763,7 +763,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-io with libio.ch"
-						CommandLine="ctangle mmixware\mmix-io.w libio.ch"
+						CommandLine="ctangle mmixware\mmix-io.w libio.ch&#x0D;&#x0A;"
 						AdditionalDependencies="libio.ch"
 						Outputs="mmix-io.c"
 					/>

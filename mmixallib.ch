@@ -138,6 +138,7 @@ void report_error(message)
 #include <stdlib.h>
 #include <stdio.h>
 #include <setjmp.h>
+#include "libname.h"
 #define _MMIXAL_
 
 int err_count;
@@ -149,7 +150,7 @@ extern jmp_buf mmixal_exit;
 
 void report_error(char *message,int file_no,int line_no)
 { char *filename;
-  filename=file2name(file_no);
+  filename=file2filename(file_no);
   if (!filename) filename="(nofile)";
   if (message[0]=='*')
     fprintf(stderr,"\"%s\", line %d warning: %s\n",
