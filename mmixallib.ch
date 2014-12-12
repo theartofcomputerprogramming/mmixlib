@@ -141,7 +141,7 @@ void report_error(message)
 #include "libname.h"
 #define _MMIXAL_
 
-int err_count;
+extern int err_count;
 extern FILE *listing_file;
 extern void flush_listing_line(char*line);
 typedef enum{false,true}bool;
