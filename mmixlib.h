@@ -83,6 +83,15 @@ POP,RESUME,SAVE,UNSAVE,SYNC,SWYM,GET,TRIP}mmix_opcode;
 #define PT_BIT (1<<6) 
 #define IN_BIT (1<<7) 
 
+#define X_BIT (1<<8) 
+#define Z_BIT (1<<9) 
+#define U_BIT (1<<10) 
+#define O_BIT (1<<11) 
+#define I_BIT (1<<12) 
+#define W_BIT (1<<13) 
+#define V_BIT (1<<14) 
+#define D_BIT (1<<15) 
+#define H_BIT (1<<16)  
 
 typedef struct{
 #ifndef VMB
@@ -181,6 +190,7 @@ extern void show_stats(bool verbose);
 
 extern int mmix_printf(FILE *f, char *format,...);
 /* printf replacement */
+extern int mmix_vprintf(char *format, va_list vargs);
 extern int mmix_fputc(int c, FILE *f);
 /* fputc replacement */
 void mmix_stack_trace(char *format,...);
