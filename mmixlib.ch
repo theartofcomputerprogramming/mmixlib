@@ -379,14 +379,22 @@ g[255]=incr(aux,12*8); /* we will \.{UNSAVE} from here, to get going */
   }
   aux=incr(aux,12*8); /* we can |UNSAVE| from here, to get going */
 #ifdef MMIX_BOOT
+  loc.h=0x80000000; loc.l=0;
   g[rWW] = x;  /* last octa stored is address of \.{Main} */
   g[rBB] = aux;
   g[rXX].h = 0; g[rXX].l = ((tetra)UNSAVE<<24)+255; /* \.{UNSAVE} \$255 */
   rzz = 1;
 #else
-  inst_ptr = x;
+  loc.h=0x80000000; loc.l=0;
+  inst_ptr = x;  /* last octa stored is address of \.{Main} */
   g[255] = aux;
-  rzz = 0;  /* pretend \.{RESUME} 0 */
+  g[rXX].h = 0; g[rXX].l = ((tetra)UNSAVE<<24)+255; /* \.{UNSAVE} \$255 */
+  rzz = 1;
+  trace_once=interacting;
+/*  RESUME 0 will not work for x = 0
+    inst_ptr = x;
+    g[255] = aux;
+    rzz = 0;  pretend \.{RESUME} 0 */
 #endif
 //  if (interacting) set_break(x,exec_bit);
   x.h=G<<24; x.l=0 /* rA */; 
@@ -1163,17 +1171,17 @@ if (stack_tracing) {
 g[rS]=incr(g[rS],-8);
 ll=mem_find(g[rS]);
 test_load_bkpt(ll);@+test_load_bkpt(ll+1);
-if (k==rZ+1) 
-{ if (!MMIX_LDO(a,g[rS])) { w=g[rS]; goto page_fault; }
+if (k==rZ+1) { 
+  if (!MMIX_LDO(a,g[rS])) { w=g[rS]; goto page_fault; }
   x.l=G=g[rG].l=a.h>>24;
   a.l=g[rA].l=a.l&0x3ffff;
 }
 else
- if (!MMIX_LDO(g[k],g[rS]))  { w=g[rS]; goto page_fault; }
- if (k>=32) mmix_stack_trace("             rS-=8, g[%d]=M8[#%08x%08x]=#%08x%08x\n",
+  if (!MMIX_LDO(g[k],g[rS]))  { w=g[rS]; goto page_fault; }
+if (k>=32) mmix_stack_trace("             rS-=8, g[%d]=M8[#%08x%08x]=#%08x%08x\n",
           k,g[rS].h,g[rS].l,g[k].h,g[k].l);
 else if (k==rZ+1) mmix_stack_trace("             (rG,rA)=M8[#%08x%08x]=#%08x%08x\n",
-          g[rS].h,g[rS].l,g[k].h,g[k].l);
+          g[rS].h,g[rS].l,a.h,a.l);
 else mmix_stack_trace("             rS-=8, %s=M8[#%08x%08x]=#%08x%08x\n",
           special_name[k],g[rS].h,g[rS].l,g[k].h,g[k].l);
 @z
