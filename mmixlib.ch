@@ -64,7 +64,9 @@ The tet field of the mem_tetra may be eliminated.
 @x
   tetra tet; /* the tetrabyte of simulated memory */
 @y
-  MMIX_MEM_TET
+#ifdef MMIX_MEM_TET
+  tetra tet; /* the tetrabyte of simulated memory */
+#endif
 @z
 
 @x
@@ -947,8 +949,10 @@ fin_pst:
  if (!MMIX_STT(b,w)) goto page_fault;
 fin_st:
  ll=mem_find(w); test_store_bkpt(ll);
+#ifdef MMIX_MEM_TET
  w.l&=-8;@+ll=mem_find(w);
  a.h=ll->tet;@+ a.l=(ll+1)->tet; /* for trace output */
+#endif
  break;
 @z
 
@@ -2449,7 +2453,7 @@ signal(SIGINT,catchint); /* now |catchint| will catch the first interrupt */
 @ @(libinit.c@>=
 #ifdef WIN32
 BOOL CtrlHandler( DWORD fdwCtrlType ) 
-{ MMIX_CTRL_HANDLER  
+{ MMIX_CTRL_HANDLER;
   interrupt=true;
   if (fdwCtrlType==CTRL_C_EVENT || fdwCtrlType==CTRL_BREAK_EVENT )
   { 
@@ -2476,7 +2480,7 @@ void catchint(n)
  interact: @<Put a new command in |command_buf|@>;
 @y
  interact: @<Put a new command in |command_buf|@>;
- MMIX_GET_INTERRUPT  
+ MMIX_GET_INTERRUPT;  
 @z
 
 @x
@@ -2597,8 +2601,8 @@ void show_breaks @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
 #include <stdio.h>
 #include <string.h>
 #include <setjmp.h>
-#include "libconfig.h"
 #include <time.h>
+#include "libconfig.h"
 #include "libtype.h"
 #include "libglobals.h"
 #include "mmixlib.h"

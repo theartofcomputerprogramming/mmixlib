@@ -120,8 +120,8 @@ extern octa*l;
 extern int lring_size;
 extern int lring_mask;
 extern int S;
-char*special_name[32];
-
+extern char*special_name[32];
+extern octa new_Q;
 
 extern void mmputchars(unsigned char *buf,int size,octa addr);
 extern int mmgetchars(unsigned char *buf, int size, octa addr, int stop);

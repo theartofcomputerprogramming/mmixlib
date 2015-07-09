@@ -53,9 +53,11 @@
 
 #ifdef MMIX_PRINT
 extern int mmix_printf(FILE *f,char *format,...);
+extern int mmix_vprintf(char *format, va_list vargs);
 extern int mmix_fputc(int c, FILE *f);
 #define printf(...) mmix_printf(stdout,__VA_ARGS__)
 #define fprintf(file,...) mmix_printf(file,__VA_ARGS__)
+#define vprintf(format,vargs) mmix_vprintf(format,vargs)
 #define fputc(c,f) mmix_fputc(c,f)
 #endif
 

@@ -26,7 +26,11 @@
 #define MMIX_STORE_IVTC(virt,phys) store_exec_translation(&(virt),&(phys))
 #define MMIX_STORE_DVTC(virt,phys) store_data_translation(&(virt),&(phys))
 
+#ifdef WIN32
 #define	MMIX_DELAY(ms,d)  d = vmb_wait_for_event_timed(&vmb,ms)
+#else
+#define	MMIX_DELAY(ms,d)  (usleep(1000*(ms)), d=(ms))
+#endif
 
 /* define this to check for external asynchronous ineterrupts*/
 #define MMIX_GET_INTERRUPT  \
@@ -61,13 +65,18 @@ if (vmb_get_interrupt(&vmb,&new_Q.h,&new_Q.l)==1) \
    otherwise it will resume at Main */
 #define MMIX_BOOT
 
+#ifdef _MMIXAL_
+#undef MMIX_PRINT
+#else
 #define MMIX_PRINT
-
+#endif
 #ifdef MMIX_PRINT
-extern int mmix_printf(char *format,...);
+extern int mmix_printf(FILE *f,char *format,...);
+extern int mmix_vprintf(char *format, va_list vargs);
 extern int mmix_fputc(int c, FILE *f);
-#define printf(...) mmix_printf(__VA_ARGS__)
-#define fprintf(file,...) mmix_printf(__VA_ARGS__)
+#define printf(...) mmix_printf(stdout,__VA_ARGS__)
+#define fprintf(file,...) mmix_printf(file,__VA_ARGS__)
+#define vprintf(format,vargs) mmix_vprintf(format,vargs)
 #define fputc(c,f) mmix_fputc(c,f)
 #endif
 
@@ -99,9 +108,7 @@ extern int mmix_fputc(int c, FILE *f);
 
 #define MMXIAL_LINE_TRUNCATED     fprintf(stderr,"(say `-b <number>' to increase the length of my input buffer)\n");
 
-/* MMIXAL has its own notion of file numbers as embedded in the mmo file
-   we might want to convert this to a global file number */
-#define MMIX_FILE_NO(file_no) filename2file(filename[file_no], file_no)
+
 
 /* define this to record file line and location associations while assembling */
 #define MMIXAL_LINE_LOC(file_no,line_no,cur_loc) add_line_loc(file_no,line_no,cur_loc)

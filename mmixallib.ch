@@ -389,7 +389,6 @@ int main(argc,argv)
 #include <setjmp.h>
 #define _MMIXAL_
 #include "libconfig.h"
-#include "libimport.h"
 
 
 @#
@@ -397,6 +396,8 @@ int main(argc,argv)
 @<Preprocessor definitions@>@;
 @<Type definitions@>@;
 @<Global variables@>@;
+#include "libimport.h"
+
 
 extern void report_error(char * message, int file_no, int line_no);
 extern jmp_buf mmixal_exit;

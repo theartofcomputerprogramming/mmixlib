@@ -3,3 +3,4 @@
 #include "mmix-bus.h"
 
 extern device_info vmb;
+extern void win32_log(char *msg);

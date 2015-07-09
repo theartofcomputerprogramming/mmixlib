@@ -1,13 +1,20 @@
 
 @x
-#include <stdio.h>
-#include <stdlib.h>
+@<Preprocessor macros@>@;
+@<Type definitions@>@;
+@<External subroutines@>@;
+@<Global variables@>@;
+@<Subroutines@>@;
+
 @y
-#include <stdio.h>
-#include <stdlib.h>
-#include "libconfig.h"
-#include "libimport.h"
+@<Preprocessor macros@>@;
 #pragma warning(disable : 4996 4267)
+#include "libconfig.h"
+@<Type definitions@>@;
+@<External subroutines@>@;
+@<Global variables@>@;
+#include "libimport.h"
+@<Subroutines@>@;
 @z
 
 @x
