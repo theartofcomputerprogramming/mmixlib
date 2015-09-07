@@ -11,12 +11,12 @@
 
 #define MMIX_STO(val,addr) (ll=mem_find(addr),ll->tet=(val).h,(ll+1)->tet=(val).l,true)
 #define MMIX_STT(val,addr) (ll=mem_find(addr),ll->tet=(val).l,true)
-#define MMIX_STW(val,addr) (ll=mem_find(addr),ll->tet=(ll->tet&(~(0xFFFF<<((1-((addr).l&0x1))<<4))))|(((val).l&0xFFFF)<<((1-((addr).l&0x1))<<4)),true)
+#define MMIX_STW(val,addr) (ll=mem_find(addr),ll->tet=(ll->tet&(~(0xFFFF<<((2-((addr).l&0x2))<<3))))|(((val).l&0xFFFF)<<((2-((addr).l&0x2))<<3)),true)
 #define MMIX_STB(val,addr) (ll=mem_find(addr),ll->tet=(ll->tet&(~(0xFF<<((3-((addr).l&0x3))<<3))))|(((val).l&0xFF)<<((3-((addr).l&0x3))<<3)),true)
 
 #define MMIX_LDO(val,addr) (ll=mem_find(addr),(val).h=ll->tet,(val).l=(ll+1)->tet,true)
 #define MMIX_LDT(val,addr) (ll=mem_find(addr),(val).h=0,(val).l=ll->tet,true)
-#define MMIX_LDW(val,addr) (ll=mem_find(addr),(val).h=0,(val).l=(ll->tet>>(16*(1-((addr).l&1))))&0xFFFF,true)
+#define MMIX_LDW(val,addr) (ll=mem_find(addr),(val).h=0,(val).l=(ll->tet>>(8*(2-((addr).l&2))))&0xFFFF,true)
 #define MMIX_LDB(val,addr) (ll=mem_find(addr),(val).h=0,(val).l=(ll->tet>>(8*(3-((addr).l&3))))&0xFF,true)
 
 #define MMIX_STO_UNCACHED(val,addr) MMIX_STO(val,addr) 
