@@ -1,6 +1,7 @@
 #ifndef LIBCONFIG_H
 #define LIBCONFIG_H
 
+/* This is the libconfig.h file for MMIX VD  rename to libconfig.h */
 #ifdef WIN32
 #pragma warning(disable : 4996)
 #endif
