@@ -1848,13 +1848,6 @@ else
 }
 @z
 
-We add parentheses here to make sure & comes before == and get rid of a compiler warning.
-@x
-      if (g[rU].l==0)@+{@+g[rU].h++;@+if (g[rU].h&0x7fff==0) g[rU].h-=0x8000;@+}
-@y
-      if (g[rU].l==0)@+{@+g[rU].h++;@+if ((g[rU].h&0x7fff)==0) g[rU].h-=0x8000;@+}
-@z
-
 @x
   if (g[rI].l<=info[op].oops && g[rI].l && g[rI].h==0) tracing=breakpoint=true;
 @y

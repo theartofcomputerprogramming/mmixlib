@@ -1,6 +1,5 @@
-#include "vmb.h"
-#include "address.h"
-#include "mmix-bus.h"
 
-extern device_info vmb;
+#include "../../vmbmmixlib/address.h"
+#include "../../vmbmmixlib/mmix-bus.h"
+
 extern void win32_log(char *msg);

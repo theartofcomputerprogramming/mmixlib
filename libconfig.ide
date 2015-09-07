@@ -1,6 +1,6 @@
 #ifndef LIBCONFIG_H
 #define LIBCONFIG_H
-
+/* This tis the libconfig.h file for MMIX IDE  rename to libconfig.h */
 #ifdef WIN32
 #pragma warning(disable : 4996)
 #endif
@@ -27,18 +27,16 @@
 #define MMIX_STORE_DVTC(virt,phys) store_data_translation(&(virt),&(phys))
 
 #ifdef WIN32
-#define	MMIX_DELAY(ms,d)  d = vmb_wait_for_event_timed(&vmb,ms)
+#define	MMIX_DELAY(ms,d)  ((d) = wait_time(ms))
 #else
 #define	MMIX_DELAY(ms,d)  (usleep(1000*(ms)), d=(ms))
 #endif
 
 /* define this to check for external asynchronous ineterrupts*/
-#define MMIX_GET_INTERRUPT  \
-if (vmb_get_interrupt(&vmb,&new_Q.h,&new_Q.l)==1) \
-  { g[rQ].h |= new_Q.h; g[rQ].l |= new_Q.l; }
+#define MMIX_GET_INTERRUPT  get_interrupt(&new_Q)
 
 /* this code is executed when MMIX enters the handler for Ctrl-C */
-#define   MMIX_CTRL_HANDLER   vmb_cancel_wait_for_event(&vmb); show_operating_system=true;
+#define   MMIX_CTRL_HANDLER   (cancel_wait(), show_operating_system=true)
 
 
 /* this code defines additional command line options */
@@ -91,7 +89,7 @@ extern int mmix_fputc(int c, FILE *f);
 #define MMIX_ERROR(f,m) fprintf(stderr,f,m)
 
 /* define this if you need the tetra inside the mem_node */
-#define MMIX_MEM_TET /* tetra tet; the tetrabyte of simulated memory */
+#undef MMIX_MEM_TET /* tetra tet; the tetrabyte of simulated memory */
 
 /* these are the functions for the instructions not implemented in the basic mmix simulator */
 #define MMIX_WRITE_DCACHE() write_all_data_cache()
