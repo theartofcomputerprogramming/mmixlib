@@ -34,12 +34,11 @@
 #define	MMIX_DELAY(ms,d)  (usleep(1000*(ms)), d=(ms))
 #endif
 
-/* define this to check for external asynchronous ineterrupts*/
+/* define this to check for external asynchronous interrupts*/
 #define MMIX_GET_INTERRUPT  get_interrupt(&new_Q)
 
 /* this code is executed when MMIX enters the handler for Ctrl-C */
 #define   MMIX_CTRL_HANDLER   (cancel_wait(), show_operating_system=true)
-
 
 /* this code defines additional command line options */
 #define MMIX_OPTIONS  \
@@ -60,7 +59,6 @@
   } \
   return;  \
 
-
 /* if MMIX_BOOT is defined, mmis-sim will boot from addres #8000...0000
    otherwise it will resume at Main */
 #define MMIX_BOOT
@@ -71,6 +69,7 @@
 #else
 #define MMIX_PRINT
 #endif
+
 #ifdef MMIX_PRINT
 extern int mmix_printf(FILE *f,char *format,...);
 extern int mmix_vprintf(char *format, va_list vargs);

@@ -24,8 +24,8 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				Description="copy boilerplate include file"
-				CommandLine="copy $(InputDir)mmixware\boilerplate.w $(InputDir)boilerplate.w"
+				Description=""
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -90,8 +90,8 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				Description="copy boilerplate include file"
-				CommandLine="copy $(InputDir)mmixware\boilerplate.w $(InputDir)boilerplate.w"
+				Description=""
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -688,10 +688,10 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="Copy libconfig.ide to libconfig.h"
-						CommandLine="copy libconfig.ide libconfig.h&#x0D;&#x0A;"
-						AdditionalDependencies="libconfig.ide"
-						Outputs="libconfig.h"
+						Description=""
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -699,10 +699,10 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="Copy libconfig.ide to libconfig.h"
-						CommandLine="copy libconfig.ide libconfig.h&#x0D;&#x0A;"
-						AdditionalDependencies="libconfig.ide"
-						Outputs="libconfig.h"
+						Description=""
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
 					/>
 				</FileConfiguration>
 			</File>
@@ -718,10 +718,10 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="Copy libimport.ide to libimport.h"
-						CommandLine="copy libimport.ide libimport.h"
-						AdditionalDependencies="libimport.ide"
-						Outputs="libimport.h"
+						Description=""
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -729,10 +729,10 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="Copy libimport.ide to libimport.h"
-						CommandLine="copy libimport.ide libimport.h"
-						AdditionalDependencies="libimport.ide"
-						Outputs="libimport.h"
+						Description=""
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
 					/>
 				</FileConfiguration>
 			</File>
@@ -761,6 +761,32 @@
 			<File
 				RelativePath=".\arith-win.ch"
 				>
+			</File>
+			<File
+				RelativePath=".\boilerplate.w"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Copying include file boilerplate.w"
+						CommandLine="copy $(InputDir)mmixware\boilerplate.w $(InputDir)boilerplate.w"
+						AdditionalDependencies="$(InputDir)mmixware\boilerplate.w"
+						Outputs="$(InputDir)boilerplate.w"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Copying include file boilerplate.w"
+						CommandLine="copy $(InputDir)mmixware\boilerplate.w $(InputDir)boilerplate.w"
+						AdditionalDependencies="$(InputDir)mmixware\boilerplate.w"
+						Outputs="$(InputDir)boilerplate.w"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\libio.ch"

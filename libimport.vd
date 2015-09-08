@@ -1,1 +1,3 @@
 extern void win32_log(char *msg);
+extern void win32_ferror(int line, char *format, char *str);
+extern void win32_message(char *msg);
