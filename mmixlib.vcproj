@@ -24,7 +24,6 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				Description=""
 				CommandLine=""
 			/>
 			<Tool
@@ -46,7 +45,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;VMB"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
@@ -90,7 +89,6 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				Description=""
 				CommandLine=""
 			/>
 			<Tool
@@ -771,7 +769,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Copying include file boilerplate.w"
-						CommandLine="copy $(InputDir)mmixware\boilerplate.w $(InputDir)boilerplate.w"
+						CommandLine="copy $(InputDir)mmixware\boilerplate.w $(InputDir)boilerplate.w&#x0D;&#x0A;"
 						AdditionalDependencies="$(InputDir)mmixware\boilerplate.w"
 						Outputs="$(InputDir)boilerplate.w"
 					/>
@@ -782,7 +780,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Copying include file boilerplate.w"
-						CommandLine="copy $(InputDir)mmixware\boilerplate.w $(InputDir)boilerplate.w"
+						CommandLine="copy $(InputDir)mmixware\boilerplate.w $(InputDir)boilerplate.w&#x0D;&#x0A;"
 						AdditionalDependencies="$(InputDir)mmixware\boilerplate.w"
 						Outputs="$(InputDir)boilerplate.w"
 					/>

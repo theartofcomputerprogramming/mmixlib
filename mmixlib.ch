@@ -2062,6 +2062,10 @@ extern void dump_tet(tetra t);
 void mmix_boot(void)
 { 
   @<Boot the machine@>;
+  MMIX_CLEAR_DVTC();
+  MMIX_CLEAR_IVTC();
+  MMIX_CLEAR_ICACHE();
+  MMIX_CLEAR_DCACHE();
 #ifdef MMIX_BOOT
   loc.h=inst_ptr.h=0x80000000;
   loc.l=inst_ptr.l=0x00000000;
