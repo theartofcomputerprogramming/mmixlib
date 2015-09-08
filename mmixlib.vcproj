@@ -683,6 +683,28 @@
 			<File
 				RelativePath=".\libconfig.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Copy libconfig.ide to libconfig.h"
+						CommandLine="copy libconfig.ide libconfig.h&#x0D;&#x0A;"
+						AdditionalDependencies="libconfig.ide"
+						Outputs="libconfig.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Copy libconfig.ide to libconfig.h"
+						CommandLine="copy libconfig.ide libconfig.h&#x0D;&#x0A;"
+						AdditionalDependencies="libconfig.ide"
+						Outputs="libconfig.h"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\libglobals.h"
@@ -691,6 +713,28 @@
 			<File
 				RelativePath=".\libimport.h"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Copy libimport.ide to libimport.h"
+						CommandLine="copy libimport.ide libimport.h"
+						AdditionalDependencies="libimport.ide"
+						Outputs="libimport.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Copy libimport.ide to libimport.h"
+						CommandLine="copy libimport.ide libimport.h"
+						AdditionalDependencies="libimport.ide"
+						Outputs="libimport.h"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\libname.h"
