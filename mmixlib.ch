@@ -1,3 +1,5 @@
+% This is the change file that extracts from mmix-sim.w 
+% the various .c files that make up the mmix library
 
 Types and preprocessor macros go into libtype.h
 
@@ -83,6 +85,9 @@ mem_node* new_mem @,@,@[ARGS((void))@];@+@t}\6{@>
 #include "libglobals.h"
 #include "mmixlib.h"
 #include "libimport.h"
+
+
+
 
 
 
@@ -408,6 +413,7 @@ g[255]=incr(aux,12*8); /* we will \.{UNSAVE} from here, to get going */
 
 The source line buffer is allocated once.
 
+
 @x
 @<Initialize...@>=
 if (buf_size<72) buf_size=72;
@@ -550,7 +556,7 @@ This restriction is no longer necessary.
 @y
 @z
 
-the next two lines are not a propper part of
+The next two lines are not a propper part of
 performing an instruction and move to a separate 
 function respectively to the main loop.
 @x
@@ -565,6 +571,20 @@ int rop; /* ropcode of a resumed instruction */
 int rop; /* ropcode of a resumed instruction */
 int rzz; /* Z field of a resumed instruction */
 @z
+
+We turn |breakpoint| into an int to provide more information on the
+kind of breakpoint. Instead of setting |breakpoint| to |true|, we 
+(usually) store the respective bit of the |bkpt| field in the |mem_tetra| 
+that caused the break. In case of a SWYM instruction, we set it to 
+the YZ value shifted by 8 bit to the left. 
+In all other cases, we set the |trace_bit|.
+
+@x
+bool breakpoint; /* should we pause after the current instruction? */
+@y
+int breakpoint; /* what caused the pause after the current instruction? */
+@z
+
 
 @x
 bool interacting; /* are we in interactive mode? */
@@ -606,6 +626,15 @@ loading the instruction is postponed
   inst=ll->tet;
 @y
 @z
+
+When we hit an execute breakpoint, we set the exec bit in |breakpoint|.
+
+@x
+  if (ll->bkpt&exec_bit) breakpoint=true;
+@y
+  if (ll->bkpt&exec_bit) breakpoint|=exec_bit;
+@z
+
 
 now before incrementing the instruction pointer we load the instruction.
 @x
@@ -712,7 +741,7 @@ cur_round=ROUND_NEAR;
 @x
 @d test_store_bkpt(ll) if ((ll)->bkpt&write_bit) breakpoint=tracing=true
 @y
-@d test_store_bkpt(ll) if ((ll)->bkpt&write_bit) rw_break=breakpoint=tracing=true
+@d test_store_bkpt(ll) if ((ll)->bkpt&write_bit) rw_break=breakpoint|=write_bit,tracing=true
 @z
 
 
@@ -780,7 +809,7 @@ void stack_store(x)
 @x
 @d test_load_bkpt(ll) if ((ll)->bkpt&read_bit) breakpoint=tracing=true
 @y
-@d test_load_bkpt(ll) if ((ll)->bkpt&read_bit) rw_break=breakpoint=tracing=true
+@d test_load_bkpt(ll) if ((ll)->bkpt&read_bit) rw_break=breakpoint|=read_bit,tracing=true
 @z
 
 Same with stack load.
@@ -817,6 +846,7 @@ showing lines is part of main.
               k,g[rS].h,g[rS].l,l[k].h,l[k].l);
 @z
 
+
 @x
 @<Sub...@>=
 int register_truth @,@,@[ARGS((octa,mmix_opcode))@];@+@t}\6{@>
@@ -828,6 +858,7 @@ int register_truth @,@,@[ARGS((octa,mmix_opcode))@];@+@t}\6{@>
 int register_truth @,@,@[ARGS((octa,mmix_opcode))@];@+@t}\6{@>
 @z
 
+Make sure we do not branch from a positive to a negative address.
 @x
    inst_ptr=z;
 @y
@@ -835,6 +866,13 @@ int register_truth @,@,@[ARGS((octa,mmix_opcode))@];@+@t}\6{@>
    goto protection_violation;
    inst_ptr=z;
 @z
+
+@x
+   if (g[rI].l<=2 && g[rI].l && g[rI].h==0) tracing=breakpoint=true;
+@y
+   if (g[rI].l<=2 && g[rI].l && g[rI].h==0) g[rQ].l |= IN_BIT, new_Q.l |= IN_BIT, tracing=true, breakpoint|=trace_bit;
+@z
+
 
 Loading is supposed to use the functions from libconfig
 
@@ -1293,7 +1331,7 @@ case SWYM:
      z.h=0, z.l=yz;
      x.h=0, x.l=xx;
      tracing=interacting;
-     breakpoint=true;
+     breakpoint=(breakpoint&0xFF) | (yz<<8);
      interrupt=false;
      @<Set |b| from register X@>;
      n=mmgetchars((unsigned char *)buf,256,b,0);
@@ -1320,7 +1358,7 @@ protection_violation: strcpy(lhs,"!protected");
 g[rQ].h |= P_BIT; new_Q.h |= P_BIT; /* set the p bit */
  goto break_inst;
 security_inst: strcpy(lhs,"!insecure");
-break_inst: breakpoint=tracing=true;
+break_inst: tracing=true, breakpoint|=trace_bit;
  if (!interacting && !interact_after_break) halted=true;
 break;
 @z
@@ -1351,6 +1389,12 @@ case TRAP:@+if (xx==0 && yy<=max_sys_call)
 #endif
 @z
 
+This is the code for TRAP 0,Halt,0
+@x
+if (!zz) halted=breakpoint=true;
+@y
+if (!zz) halted=true, breakpoint|=trace_bit;
+@z
 
 @x
 "$255 = Fopen(%!z,M8[%#b]=%#q,M8[%#a]=%p) = %x",
@@ -1751,7 +1795,7 @@ else if ( rzz == 1)
   x=g[255]=g[rBB];
   @<Check for security violation@>
   if (interact_after_resume)
-  { breakpoint = true;
+  { breakpoint|=trace_bit;
     interact_after_resume = false;
   }
 }
@@ -1851,7 +1895,7 @@ else
 @x
   if (g[rI].l<=info[op].oops && g[rI].l && g[rI].h==0) tracing=breakpoint=true;
 @y
-  if (g[rI].l<=info[op].oops && g[rI].l && g[rI].h==0) g[rQ].l |= IN_BIT, new_Q.l |= IN_BIT; 
+  if (g[rI].l<=info[op].oops && g[rI].l && g[rI].h==0) g[rQ].l |= IN_BIT, new_Q.l |= IN_BIT, tracing=true, breakpoint|=trace_bit; 
 @z
 
 
@@ -2324,10 +2368,10 @@ boot:
   mmix_load_file(*cur_arg);
   mmix_commandline(argc, argv);
   while (true) {
-    if (interrupt && !breakpoint) breakpoint=interacting=true, interrupt=false;
+    if (interrupt && !breakpoint) breakpoint|=trace_bit, interacting=true, interrupt=false;
     else if (!(inst_ptr.h&sign_bit) || show_operating_system || 
           (inst_ptr.h==0x80000000 && inst_ptr.l==0))
-    { breakpoint=false;
+    { breakpoint=0;
       if (interacting) { 
 		if (!mmix_interact()) goto end_simulation;
       }
@@ -2344,7 +2388,7 @@ boot:
     if (interact_after_break) 
        interacting=true, interact_after_break=false;
     if (g[rQ].l&g[rK].l&RE_BIT)
-    { breakpoint=true; 
+    { breakpoint|=trace_bit; 
       goto boot;
     }
   }
@@ -2388,6 +2432,8 @@ void scan_option @,@,@[ARGS((char*,bool))@];@+@t}\6{@>
 #include "libimport.h"
 
 
+
+
 void scan_option @,@,@[ARGS((char*,bool))@];@+@t}\6{@>
 @z
 
@@ -2424,6 +2470,7 @@ bool profiling=0; /* should we print the profile at the end? */
 "O         enable tracing inside the operating system\n",@|
 "o         disable tracing inside the operating system\n",@|
 @z
+
 
 
 
@@ -2479,6 +2526,13 @@ void catchint(n)
  interact: @<Put a new command in |command_buf|@>;
  MMIX_GET_INTERRUPT;  
 @z
+
+@x
+  case '\n': case 'n': breakpoint=tracing=true; /* trace one inst and break */
+@y
+  case '\n': case 'n': breakpoint|=trace_bit,tracing=true; /* trace one inst and break */
+@z
+
 
 @x
   case '-': k=strlen(p);@+if (p[k-1]=='\n') p[k-1]='\0';
