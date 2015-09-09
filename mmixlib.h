@@ -197,7 +197,7 @@ void mmix_stack_trace(char *format,...);
 /* function to do the stack trace */
 
 extern bool halted;
-extern bool breakpoint;
+extern int breakpoint;
 extern bool interrupt;
 extern bool interacting;
 extern octa rOlimit;
@@ -208,7 +208,6 @@ extern bool stack_tracing;
 extern octa loc;
 extern octa inst_ptr;
 extern tetra inst;
-extern bool rw_break;
 extern bool show_operating_system;
 extern bool trace_once;
 extern bool resuming;

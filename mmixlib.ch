@@ -582,17 +582,17 @@ In all other cases, we set the |trace_bit|.
 @x
 bool breakpoint; /* should we pause after the current instruction? */
 @y
-int breakpoint; /* what caused the pause after the current instruction? */
+int breakpoint=0; /* what caused the pause after the current instruction? */
 @z
 
 
 @x
 bool interacting; /* are we in interactive mode? */
 @y
-bool interacting; /* are we in interactive mode? */
+bool interacting=false; /* are we in interactive mode? */
 bool show_operating_system = false; /* do we show negative addresses */
 bool trace_once=false;
-bool rw_break=false;
+
 octa rOlimit={-1,-1}; /* tracing and break only if g[rO]<=rOlimit */
 bool interact_after_resume = false;
 @z
@@ -741,7 +741,7 @@ cur_round=ROUND_NEAR;
 @x
 @d test_store_bkpt(ll) if ((ll)->bkpt&write_bit) breakpoint=tracing=true
 @y
-@d test_store_bkpt(ll) if ((ll)->bkpt&write_bit) rw_break=breakpoint|=write_bit,tracing=true
+@d test_store_bkpt(ll) if ((ll)->bkpt&write_bit) breakpoint|=write_bit,tracing=true
 @z
 
 
@@ -809,7 +809,7 @@ void stack_store(x)
 @x
 @d test_load_bkpt(ll) if ((ll)->bkpt&read_bit) breakpoint=tracing=true
 @y
-@d test_load_bkpt(ll) if ((ll)->bkpt&read_bit) rw_break=breakpoint|=read_bit,tracing=true
+@d test_load_bkpt(ll) if ((ll)->bkpt&read_bit) breakpoint|=read_bit,tracing=true
 @z
 
 Same with stack load.
@@ -1973,6 +1973,8 @@ char switchable_string[300] ={0}; /* holds |rhs|; position 0 is ignored */
 @x
 @ @<Sub...@>=
 void show_stats @,@,@[ARGS((bool))@];@+@t}\6{@>
+void show_stats(verbose)
+  bool verbose;
 @y
 @ @(libstats.c@>=
 #include <stdio.h>
@@ -1985,7 +1987,9 @@ void show_stats @,@,@[ARGS((bool))@];@+@t}\6{@>
 #include "libarith.h"
 #include "libimport.h"
 
-void show_stats @,@,@[ARGS((bool))@];@+@t}\6{@>
+void show_stats @,@,@[ARGS((int))@];@+@t}\6{@>
+void show_stats(verbose)
+  int verbose;
 @z
 
 
