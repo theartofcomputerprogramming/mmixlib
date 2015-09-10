@@ -24,7 +24,8 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine=""
+				Description="Copy boilerplate.w"
+				CommandLine="copy $(InputDir)mmixware\boilerplate.w $(InputDir)boilerplate.w"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -89,7 +90,8 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine=""
+				Description="Copy boilerplate.w"
+				CommandLine="copy $(InputDir)mmixware\boilerplate.w $(InputDir)boilerplate.w"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -768,10 +770,10 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="Copying include file boilerplate.w"
-						CommandLine="copy $(InputDir)mmixware\boilerplate.w $(InputDir)boilerplate.w&#x0D;&#x0A;"
-						AdditionalDependencies="$(InputDir)mmixware\boilerplate.w"
-						Outputs="$(InputDir)boilerplate.w"
+						Description=""
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -779,10 +781,10 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="Copying include file boilerplate.w"
-						CommandLine="copy $(InputDir)mmixware\boilerplate.w $(InputDir)boilerplate.w&#x0D;&#x0A;"
-						AdditionalDependencies="$(InputDir)mmixware\boilerplate.w"
-						Outputs="$(InputDir)boilerplate.w"
+						Description=""
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
 					/>
 				</FileConfiguration>
 			</File>
