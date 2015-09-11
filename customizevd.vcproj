@@ -185,9 +185,34 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="copying libconfig.vd"
+						Description=""
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description=""
+						CommandLine=""
+						AdditionalDependencies=""
+						Outputs=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\mmixlib\libconfig.vd"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="copy libconfig.vd  to libconfig.h"
 						CommandLine="copy $(InputDir)libconfig.vd  $(InputDir)libconfig.h"
-						AdditionalDependencies="$(InputDir)libconfig.vd"
 						Outputs="$(InputDir)libconfig.h"
 					/>
 				</FileConfiguration>
@@ -196,16 +221,11 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="copying libconfig.vd"
+						Description="copy libconfig.vd  to libconfig.h"
 						CommandLine="copy $(InputDir)libconfig.vd  $(InputDir)libconfig.h"
-						AdditionalDependencies="$(InputDir)libconfig.vd"
 						Outputs="$(InputDir)libconfig.h"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\mmixlib\libconfig.vd"
-				>
 			</File>
 			<File
 				RelativePath="..\mmixlib\libimport.h"
@@ -236,6 +256,26 @@
 			<File
 				RelativePath="..\mmixlib\libimport.vd"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="copy libimport.vd  to libimport.h"
+						CommandLine="copy $(InputDir)libimport.vd  $(InputDir)libimport.h"
+						Outputs="$(InputDir)libimport.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="copy libimport.vd  to libimport.h"
+						CommandLine="copy $(InputDir)libimport.vd  $(InputDir)libimport.h"
+						Outputs="$(InputDir)libimport.h"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter

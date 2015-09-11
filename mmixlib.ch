@@ -265,12 +265,17 @@ static mem_tetra *load_mem_tetra(octa loc, tetra val)
 @z
 
 Before we increment the line number,
-we reset the frequency.
+we reset the frequency and possibly record file, line, and loc.
 
 @x
+    ll->file_no=cur_file;
+    ll->line_no=cur_line;
     cur_line++;
 @y
+    ll->file_no=cur_file;
+    ll->line_no=cur_line;
     ll->freq=0;
+    MMIX_LOAD_LINE_LOC(cur_file,cur_line,cur_loc);
     cur_line++;
 @z
 
@@ -1345,7 +1350,7 @@ case SWYM:
  else
    strcpy(rhs,"");
 break;
-translation_bypassed_inst: strcpy(lhs,"!absolute address");
+translation_bypassed_inst: strcpy(lhs,"!negative address in load/store");
 g[rQ].h |= N_BIT; new_Q.h |= N_BIT; /* set the n bit */
  goto break_inst;
 privileged_inst: strcpy(lhs,"!kernel only");

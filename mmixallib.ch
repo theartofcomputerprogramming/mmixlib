@@ -227,7 +227,7 @@ the association of lines and locations.
  for (j=0;j<k;j++) {
 @z
 
-We allocate tree nodes node by node so that we can free them again.
+We allocate tree nodes, node by node, so that we can free them again.
 
 @x
   register trie_node *t=next_trie_node;
