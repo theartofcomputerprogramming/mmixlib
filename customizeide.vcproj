@@ -185,9 +185,26 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="copying libconfig.ide"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\mmixlib\libconfig.ide"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="copy libconfig.ide  to libconfig.h"
 						CommandLine="copy $(InputDir)libconfig.ide  $(InputDir)libconfig.h"
-						AdditionalDependencies="$(InputDir)libconfig.ide"
 						Outputs="$(InputDir)libconfig.h"
 					/>
 				</FileConfiguration>
@@ -196,16 +213,11 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="copying libconfig.ide"
+						Description="copy libconfig.ide  to libconfig.h"
 						CommandLine="copy $(InputDir)libconfig.ide  $(InputDir)libconfig.h"
-						AdditionalDependencies="$(InputDir)libconfig.ide"
 						Outputs="$(InputDir)libconfig.h"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\mmixlib\libconfig.ide"
-				>
 			</File>
 			<File
 				RelativePath="..\mmixlib\libimport.h"
@@ -215,9 +227,26 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="copying libimport.ide"
-						CommandLine="copy $(InputDir)libimport.ide  $(InputDir)libimport.h&#x0D;&#x0A;"
-						AdditionalDependencies="$(InputDir)libimport.ide"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\mmixlib\libimport.ide"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="copy libimport.ide  to libimport.h"
+						CommandLine="copy $(InputDir)libimport.ide  $(InputDir)libimport.h"
 						Outputs="$(InputDir)libimport.h"
 					/>
 				</FileConfiguration>
@@ -226,16 +255,11 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="copying libimport.ide"
-						CommandLine="copy $(InputDir)libimport.ide  $(InputDir)libimport.h&#x0D;&#x0A;"
-						AdditionalDependencies="$(InputDir)libimport.ide"
+						Description="copy libimport.ide  to libimport.h"
+						CommandLine="copy $(InputDir)libimport.ide  $(InputDir)libimport.h"
 						Outputs="$(InputDir)libimport.h"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\mmixlib\libimport.ide"
-				>
 			</File>
 		</Filter>
 		<Filter

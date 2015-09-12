@@ -96,5 +96,7 @@
 
 /* define this to record file line and location associations while assembling */
 #define MMIXAL_LINE_LOC(file_no,line_no,cur_loc)
+/* define this to record file line and location associations while loading mmo files */
+#define MMIX_LOAD_LINE_LOC(file_no,line_no,cur_loc)
 
 #endif
