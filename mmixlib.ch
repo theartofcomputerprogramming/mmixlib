@@ -272,10 +272,13 @@ we reset the frequency and possibly record file, line, and loc.
     ll->line_no=cur_line;
     cur_line++;
 @y
+#ifdef MMIX_LOAD_LINE_LOC
+    MMIX_LOAD_LINE_LOC(cur_file,cur_line,cur_loc);
+#else
     ll->file_no=cur_file;
     ll->line_no=cur_line;
+#endif
     ll->freq=0;
-    MMIX_LOAD_LINE_LOC(cur_file,cur_line,cur_loc);
     cur_line++;
 @z
 

@@ -223,7 +223,9 @@ the association of lines and locations.
 @x
   for (j=0;j<k;j++) {
 @y
+#ifdef MMIXAL_LINE_LOC
  MMIXAL_LINE_LOC(cur_file, line_no, cur_loc);
+#endif
  for (j=0;j<k;j++) {
 @z
 
