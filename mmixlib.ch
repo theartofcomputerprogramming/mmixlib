@@ -411,7 +411,6 @@ g[255]=incr(aux,12*8); /* we will \.{UNSAVE} from here, to get going */
     g[255] = aux;
     rzz = 0;  pretend \.{RESUME} 0 */
 #endif
-//  if (interacting) set_break(x,exec_bit);
   x.h=G<<24; x.l=0 /* rA */; 
   if (!MMIX_STO(x,aux))
      panic("Unable to store mmo file to RAM");
@@ -507,7 +506,7 @@ void print_freqs @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
 void print_freqs @,@,@[ARGS((mem_node*))@];@+@t}\6{@>
 @z
 
-We need ll as a local variable here.
+We might need ll as a local variable here.
 
 @x
   octa cur_loc;
@@ -1512,12 +1511,12 @@ int mmgetchars(buf,size,addr,stop)
 {
   register unsigned char *p;
   register int m;
-  octa x;
+  register mem_tetra *ll;
   octa a;
-  MMIX_LOCAL_LL
   for (p=buf,m=0,a=addr; m<size;) {
-    if ((a.l&0x7) || m+8>size) @<Read and store one byte; |return| if done@>@;
-    else @<Read and store eight bytes; |return| if done@>@;
+    ll=mem_find(a);@+test_load_bkpt(ll);
+    if ((a.l&0x3) || m>size-4) @<Read and store one byte; |return| if done@>@;
+    else @<Read and store up to four bytes; |return| if done@>@;
   }
   return size;
 }
@@ -1557,17 +1556,8 @@ int mmgetchars(buf,size,addr,stop)
   p++,m++,a=incr(a,1);
 }
 
-@ @<Read and store eight bytes...@>=
-{ MMIX_LDO(x,a);
-  *p=x.h>>24;
-  if (!*p && (stop==0 || (stop>0 && x.h<0x10000))) return m;
-  *(p+1)=(x.h>>16)&0xff;
-  if (!*(p+1) && stop==0) return m+1;
-  *(p+2)=(x.h>>8)&0xff;
-  if (!*(p+2) && (stop==0 || (stop>0 && (x.h&0xffff)==0))) return m+2;
-  *(p+3)=x.h&0xff;
-  if (!*(p+3) && stop==0) return m+3;
-  p+=4,m+=4,a=incr(a,4);
+@ @<Read and store up to four bytes...@>=
+{ MMIX_LDT(x,a);
   *p=x.l>>24;
   if (!*p && (stop==0 || (stop>0 && x.l<0x10000))) return m;
   *(p+1)=(x.l>>16)&0xff;
@@ -1620,12 +1610,12 @@ void mmputchars(unsigned char *buf,int size,octa addr)
 {
   register unsigned char *p;
   register int m;
-  octa x;
+  register mem_tetra *ll;
   octa a;
-  MMIX_LOCAL_LL
   for (p=buf,m=0,a=addr; m<size;) {
-    if ((a.l&0x7) || m+8>size) @<Load and write one byte@>@;
-    else @<Load and write eight bytes@>;
+    ll=mem_find(a);@+test_store_bkpt(ll);
+    if ((a.l&0x3) || m>size-4) @<Load and write one byte@>@;
+    else @<Load and write four bytes@>;
   }
 }
 @z
@@ -1645,20 +1635,19 @@ void mmputchars(unsigned char *buf,int size,octa addr)
 }
 @y
 @ @<Load and write one byte@>=
-{
+{ octa x;
   x.l=*p;
   x.h=0;
   MMIX_STB(x,a);
   p++,m++,a=incr(a,1);
 }
 
-@ @<Load and write eight bytes@>=
-{ x.h=(*p<<24)+(*(p+1)<<16)+(*(p+2)<<8)+*(p+3);
-  p+=4;
+@ @<Load and write four bytes@>=
+{ octa x;
+  x.h=0;
   x.l=(*p<<24)+(*(p+1)<<16)+(*(p+2)<<8)+*(p+3);
-  p+=4;
-  MMIX_STO(x,a);
-  m+=8,a=incr(a,8);
+  MMIX_STT(x,a);
+  p+=4,m+=4,a=incr(a,4);
 }
 @z
 
@@ -2470,8 +2459,8 @@ we need to replace all exits.
 bool interrupt; /* has the user interrupted the simulation recently? */
 bool profiling; /* should we print the profile at the end? */
 @y
-bool interrupt=0; /* has the user interrupted the simulation recently? */
-bool profiling=0; /* should we print the profile at the end? */
+bool interrupt=false; /* has the user interrupted the simulation recently? */
+bool profiling=false; /* should we print the profile at the end? */
 @z
 
 @x

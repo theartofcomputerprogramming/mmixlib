@@ -14,8 +14,6 @@ the subroutine.
 @<Preprocessor definitions@>=
 @y
 @<Sub...@>=
-extern void add_line_loc(int file_no, int line_no, octa loc);
-
 
 @ @<Global...@>=
 #include <setjmp.h>
