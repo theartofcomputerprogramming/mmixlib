@@ -597,9 +597,10 @@ int breakpoint=0; /* what caused the pause after the current instruction? */
 bool interacting; /* are we in interactive mode? */
 @y
 bool interacting=false; /* are we in interactive mode? */
-bool show_operating_system = false; /* do we show negative addresses */
 bool trace_once=false;
-
+#ifdef MMIX_TRAP
+bool show_operating_system = false; /* do we show negative addresses */
+#endif
 octa rOlimit={-1,-1}; /* tracing and break only if g[rO]<=rOlimit */
 bool interact_after_resume = false;
 @z
@@ -1899,7 +1900,10 @@ else
 @x
 if (tracing) {
 @y
-if (trace_once|| (tracing && (!(loc.h&sign_bit) || show_operating_system)&&
+if (trace_once || (tracing && 
+#ifdef MMIX_TRAP
+(!(loc.h&sign_bit) || show_operating_system) &&
+#endif
    (g[rO].h<rOlimit.h || (g[rO].h==rOlimit.h&&g[rO].l<=rOlimit.l)))) {
    trace_once=false;
 @z
@@ -2368,14 +2372,16 @@ boot:
   
   mmix_load_file(*cur_arg);
   mmix_commandline(argc, argv);
+  breakpoint=0;
+  if (interacting && !mmix_interact()) goto end_simulation;
   while (true) {
     if (interrupt && !breakpoint) breakpoint|=trace_bit, interacting=true, interrupt=false;
-    else if (!(inst_ptr.h&sign_bit) || show_operating_system || 
-          (inst_ptr.h==0x80000000 && inst_ptr.l==0))
+    else
+#ifdef MMIX_TRAP 
+    if (!(inst_ptr.h&sign_bit) || show_operating_system)
+#endif
     { breakpoint=0;
-      if (interacting) { 
-		if (!mmix_interact()) goto end_simulation;
-      }
+      if (interacting && !mmix_interact()) goto end_simulation;
     }
     if (halted) break;
     do   
@@ -2442,8 +2448,10 @@ void scan_option @,@,@[ARGS((char*,bool))@];@+@t}\6{@>
  case 'b':@+if (sscanf(arg+1,"%d",&buf_size)!=1) buf_size=0;@+return;
 @y
  case 'b':@+if (sscanf(arg+1,"%d",&buf_size)!=1) buf_size=0;@+return;
- case 'O': show_operating_system=true;@+return; \
- case 'o': show_operating_system=false;@+return; 
+#ifdef MMIX_TRAP
+ case 'O': show_operating_system=true;@+return; 
+ case 'o': show_operating_system=false;@+return;
+#endif 
  MMIX_OPTIONS
 @z
 
@@ -2639,9 +2647,11 @@ We allow breakpoints at all addresses.
 case 'B': show_breaks(mem_root);
 @y
 case 'B': show_breaks(mem_root);@+goto passit;
+#ifdef MMIX_TRAP
 case 'N': cur_seg.h=0x80000000;@+goto passit;
 case 'O': show_operating_system=true;@+goto passit;
 case 'o': show_operating_system=false;@+goto passit;
+#endif
 @z
 
 @x
