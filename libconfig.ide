@@ -38,7 +38,7 @@
 #define MMIX_GET_INTERRUPT  get_interrupt(&new_Q)
 
 /* this code is executed when MMIX enters the handler for Ctrl-C */
-#define   MMIX_CTRL_HANDLER   (cancel_wait(), show_operating_system=true)
+#define   MMIX_CTRL_HANDLER   if (interrupt)(cancel_wait(), show_operating_system=true)
 
 /* this code defines additional command line options */
 #define MMIX_OPTIONS  \
