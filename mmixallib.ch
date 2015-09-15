@@ -65,11 +65,11 @@ Char *filename[257];
           panic("Capacity exceeded: More than 256 file names");
         filename_count++;
       }
-      cur_file=k;
+      else free(filename[filename_count]); 
 @y
       filename[k]='\0';
-      cur_file= filename2file(filename);
-      if (cur_file<0) panic("Capacity exceeded: More than 256 file names");
+      k= filename2file(filename);
+      if (k<0) panic("Capacity exceeded: More than 256 file names");
 @z
 
 
@@ -315,6 +315,19 @@ tetra z,y,x,yz,xyz; /* pieces for assembly */
 static tetra z,y,x,yz,xyz; /* pieces for assembly */
 @z
 
+The following change is new for alex, the extended mmixal
+
+@x
+   f = fopen(filename[k],"rb");
+   if (f==NULL) {
+	 derr("unable to open file \"%s\"",filename[k]);@+goto bypass;@+}
+@y
+   f = fopen(file2filename(k),"rb");
+   if (f==NULL) {
+	 derr("unable to open file \"%s\"",file2filename(k));@+goto bypass;@+}
+@z
+
+
 The main() program becomes mmixal().
 
 @x
@@ -397,12 +410,11 @@ int main(argc,argv)
 @<Type definitions@>@;
 @<Global variables@>@;
 #include "libimport.h"
-
+#include "libname.h"
 
 extern void report_error(char * message, int file_no, int line_no);
 extern jmp_buf mmixal_exit;
-extern char *file2filename(int file_no);
-extern int filename2file(char *filename);
+
 @<Subroutines@>@;
 
 @#
