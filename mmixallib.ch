@@ -25,6 +25,14 @@ jmp_buf mmixal_exit;
 #endif
 @z
 
+We need to initialize buffers, especially err_buf, very early.
+
+@x
+@<Initialize everything@>=
+@y
+@<Allocate buffers@>=
+@z
+
 We change error messages that handle errors in the command line 
 (there is none). Errors are no longer written to stderr.
 
@@ -271,6 +279,14 @@ We allocat single sym nodes to be able to free them.
     if (!p) panic("Capacity exceeded: Out of symbol memory");
 @z   
 
+Now we start with the rest of the initialization.
+
+@x
+@<Init...@>=
+@y
+@<Initialize everything@>=
+@z
+
 The special names are already defined in mmix-sim.w
 
 @x
@@ -427,7 +443,10 @@ int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_o
   if (err_count!=0){
    prune(trie_root);
    goto clean_up;
-  }
+  }  
+  buf_size = b_option;
+  expanding = x_option;
+  @<Allocate buffers@>
   if (mms_name==NULL)
     panic("No input file name");
   src_file_name= mms_name;
@@ -439,8 +458,6 @@ int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_o
     listing_name[0]=0;
   else
     strncpy(listing_name,mml_name,FILENAME_MAX);
-  expanding = x_option;
-  buf_size = b_option;
     cur_file=0;
   line_no=0;
   long_warning_given=0;
