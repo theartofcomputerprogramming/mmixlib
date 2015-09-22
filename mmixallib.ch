@@ -331,19 +331,6 @@ tetra z,y,x,yz,xyz; /* pieces for assembly */
 static tetra z,y,x,yz,xyz; /* pieces for assembly */
 @z
 
-The following change is new for alex, the extended mmixal
-
-@x
-   f = fopen(filename[k],"rb");
-   if (f==NULL) {
-	 derr("unable to open file \"%s\"",filename[k]);@+goto bypass;@+}
-@y
-   f = fopen(file2filename(k),"rb");
-   if (f==NULL) {
-	 derr("unable to open file \"%s\"",file2filename(k));@+goto bypass;@+}
-@z
-
-
 The main() program becomes mmixal().
 
 @x
