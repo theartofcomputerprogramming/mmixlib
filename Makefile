@@ -1,7 +1,11 @@
 # the directory with the MMIXware sources 
 MMIXWARE=./mmixware
-INCLDIR=-I ../../vmb/src/util -I ../../vmb/src/vmbmmixlib
-LIBDIR=-L. -L../../vmb/src/util -L../../vmb/src/vmbmmixlib
+#INCLDIR=-I ../../vmb/src/util -I ../../vmb/src/vmbmmixlib
+#LIBDIR=-L. -L../../vmb/src/util -L../../vmb/src/vmbmmixlib
+#INCLDIR=-I 
+#LIBDIR=-L. 
+
+
 
 LIBSIM=	libboot.c     libfinal.c     libload.c     libprint.c       libstats.c \
 	libcommand.c  libinit.c      libmem.c      libprofile.c     libtrace.c \
@@ -36,20 +40,20 @@ abstime.h: $(MMIXWARE)/abstime.h
 	cp $< $@
 
 $(MMIXWARE)/abstime.h: $(MMIXWARE)/abstime
-	$(MAKE) -C mmix abstime
+	$(MAKE) -C mmixware abstime
 	$(MMIXWARE)/abstime > $(MMIXWARE)/abstime.h
 
 mmix-arith.c: boilerplate.w $(MMIXWARE)/mmix-arith.w
 	ctangle $(MMIXWARE)/mmix-arith.w
 
-mmix-io.c: boilerplate.w $(MMIXWARE)/mmix-io.w
-	ctangle $(MMIXWARE)/mmix-io.w
+mmix-io.c: boilerplate.w $(MMIXWARE)/mmix-io.w libio.ch
+	ctangle $(MMIXWARE)/mmix-io.w libio.ch
 
 $(LIBAL):  boilerplate.w $(MMIXWARE)/mmixal.w mmixallib.ch
 	ctangle $(MMIXWARE)/mmixal.w mmixallib.ch
 
 
-$(LIBSIM) $(LIBH) mmix-sim.c: boilerplate.w $(MMIXWARE)/mmix-sim.w mmixlib.ch libconfig.h
+$(LIBSIM) $(LIBH) mmix-sim.c: boilerplate.w $(MMIXWARE)/mmix-sim.w mmixlib.ch libconfig.h libimport.h
 	ctangle $(MMIXWARE)/mmix-sim.w mmixlib.ch 
 
 

@@ -5,10 +5,11 @@
 @<External subroutines@>@;
 @<Global variables@>@;
 @<Subroutines@>@;
-
 @y
 @<Preprocessor macros@>@;
+#ifdef WIN32
 #pragma warning(disable : 4996 4267)
+#endif
 #include "libconfig.h"
 @<Type definitions@>@;
 @<External subroutines@>@;

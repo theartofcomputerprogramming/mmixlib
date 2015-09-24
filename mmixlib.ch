@@ -878,7 +878,8 @@ Make sure we do not branch from a positive to a negative address.
 @x
    if (g[rI].l<=2 && g[rI].l && g[rI].h==0) tracing=breakpoint=true;
 @y
-   if (g[rI].l<=2 && g[rI].l && g[rI].h==0) g[rQ].l |= IN_BIT, new_Q.l |= IN_BIT, tracing=true, breakpoint|=trace_bit;
+   if (g[rI].l<=2 && g[rI].l && g[rI].h==0) 
+     g[rQ].l |= IN_BIT, new_Q.l |= IN_BIT, tracing=true, breakpoint|=trace_bit;
 @z
 
 
@@ -1893,7 +1894,8 @@ else
 @x
   if (g[rI].l<=info[op].oops && g[rI].l && g[rI].h==0) tracing=breakpoint=true;
 @y
-  if (g[rI].l<=info[op].oops && g[rI].l && g[rI].h==0) g[rQ].l |= IN_BIT, new_Q.l |= IN_BIT, tracing=true, breakpoint|=trace_bit; 
+  if (g[rI].l<=info[op].oops && g[rI].l && g[rI].h==0) 
+    g[rQ].l |= IN_BIT, new_Q.l |= IN_BIT, tracing=true, breakpoint|=trace_bit; 
 @z
 
 
@@ -1988,9 +1990,9 @@ void show_stats(verbose)
 #include "libarith.h"
 #include "libimport.h"
 
-void show_stats @,@,@[ARGS((int))@];@+@t}\6{@>
+void show_stats @,@,@[ARGS((bool))@];@+@t}\6{@>
 void show_stats(verbose)
-  int verbose;
+  bool verbose;
 @z
 
 
@@ -2522,7 +2524,7 @@ BOOL CtrlHandler( DWORD fdwCtrlType )
 void catchint @,@,@[ARGS((int))@];@+@t}\6{@>
 void catchint(n)
   int n;
-{ MMIX_CTRL_HANDLER  
+{ MMIX_CTRL_HANDLER;  
   interrupt=true;
   signal(SIGINT,catchint); /* now |catchint| will catch the next interrupt */
 }
