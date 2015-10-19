@@ -907,7 +907,7 @@ case LDT: case LDTI: case LDTU: case LDTUI:@/
 case LDHT: case LDHTI: i=j=0;@+if(!MMIX_LDT(x,w)) goto page_fault;
 x.h=x.l;x.l=0;
 fin_ld: ll=mem_find(w);@+test_load_bkpt(ll);
- if (op&0x2) x=shift_right(shift_left(x,i),i,op&0x2);
+ if ((op&0x2)==0) x=shift_right(shift_left(x,i),i,op&0x2);
 check_ld:@+ if ((w.h&sign_bit) && !(loc.h&sign_bit)) goto translation_bypassed_inst;
  goto store_x;
 page_fault:
