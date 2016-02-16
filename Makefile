@@ -57,7 +57,7 @@ $(LIBSIM) $(LIBH) mmix-sim.c: boilerplate.w $(MMIXWARE)/mmix-sim.w mmixlib.ch li
 	ctangle $(MMIXWARE)/mmix-sim.w mmixlib.ch 
 
 
-libmmix.a: $(LIBOBJ)
+libmmix.a: abstime.h $(LIBOBJ)
 	rm -f $@
 	$(AR) $(ARFLAGS) $@ $(LIBOBJ)
 	$(RANLIB) $@
