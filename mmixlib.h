@@ -214,39 +214,13 @@ extern bool resuming;
 extern mmix_opcode op;
 extern bool profiling;
 extern bool showing_stats;
-#if 0
 
-extern int cur_file; /* index of the current file in |filename| */
-extern int line_no; /* current position in the file */
-
-
-extern int err_count; /* this many errors were found */
-extern char *src_file_name; /* name of the \MMIXAL\ input file */
-extern Char *filename[257];
-extern char obj_file_name[FILENAME_MAX+1]; /* name of the binary output file */
-extern char listing_name[FILENAME_MAX+1]; /* name of the optional listing file */
-extern FILE *src_file, *obj_file, *listing_file;
-extern int expanding; /* are we expanding instructions when base address fail? */
-extern int buf_size; /* maximum number of characters per line of input */
-extern void flush_listing_line(char *s);
-extern int mmixal(void);
-
-extern int mmo_ptr;
-
-extern int mmix_status; 
-
-extern char full_mmo_name[];
-extern void mmix_status(int status);
-
-
-
-#endif
 
 /* function from mmix-io */
 void mmix_fake_stdin(FILE *f);
 /* functions that mmixal provides */
 
-extern int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option);
+extern int mmixal(char *mms_name, char *mmo_name, char *mml_name);
 /* returns zero on success, 
            negative values on fatal errors, 
 		   otherwise the number of errors found in the input
@@ -266,7 +240,8 @@ extern char listing_name[FILENAME_MAX+1]; /* name of the optional listing file *
 extern FILE *src_file, *obj_file, *listing_file;
 extern int expanding; /* are we expanding instructions when base address fail? */
 extern int buf_size; /* maximum number of characters per line of input */
-extern int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option);
+extern int check_X_BIT; /* whether checking for imprecise floating point constants */
+extern int mmixal(char *mms_name, char *mmo_name, char *mml_name);
 extern int err_count; /* the error count */
 extern void flush_listing_line(char*line);
 

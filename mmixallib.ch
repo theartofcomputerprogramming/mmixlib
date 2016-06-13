@@ -384,7 +384,7 @@ extern char obj_file_name[FILENAME_MAX+1];
 extern char listing_name[FILENAME_MAX+1];
 
 extern void report_error(char * message, int file_no, int line_no);
-extern int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option);
+extern int mmixal(char *mms_name, char *mmo_name, char *mml_name);
 @#
 int main(argc,argv)
   int argc;@+
@@ -393,7 +393,7 @@ int main(argc,argv)
   register int j; /* all-purpose integers */
 
   @<Process the command line@>;
-  return mmixal(src_file_name, obj_file_name, listing_name, expanding, buf_size);
+  return mmixal(src_file_name, obj_file_name, listing_name);
 }
 
 @ @(libmmixal.c@>=
@@ -421,7 +421,7 @@ extern jmp_buf mmixal_exit;
 @<Subroutines@>@;
 
 @#
-int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_option)
+int mmixal(char *mms_name, char *mmo_name, char *mml_name)
 {
   register int j,k; /* all-purpose integers */
   @<Local variables@>;
@@ -431,8 +431,6 @@ int mmixal(char *mms_name, char *mmo_name, char *mml_name, int x_option, int b_o
    prune(trie_root);
    goto clean_up;
   }  
-  buf_size = b_option;
-  expanding = x_option;
   @<Allocate buffers@>
   if (mms_name==NULL)
     panic("No input file name");
