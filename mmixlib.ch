@@ -879,7 +879,7 @@ Make sure we do not branch from a positive to a negative address.
    if (g[rI].l<=2 && g[rI].l && g[rI].h==0) tracing=breakpoint=true;
 @y
    if (g[rI].l<=2 && g[rI].l && g[rI].h==0) 
-     g[rQ].l |= IN_BIT, new_Q.l |= IN_BIT, tracing=true, breakpoint|=trace_bit;
+     g[rQ].l |= IN_BIT, new_Q.l |= IN_BIT;
 @z
 
 
@@ -1090,7 +1090,8 @@ case CSWAP: case CSWAPI: w.l&=-8;@+ll=mem_find(w);
 case GET:@+if (yy!=0 || zz>=32) goto illegal_inst;
   x=g[zz];
   goto store_x;
-case PUT: case PUTI:@+ if (yy!=0 || xx>=32) goto illegal_inst;
+case PUTI: z.l=yz, yy=0; 
+case PUT: if (yy!=0 || xx>=32) goto illegal_inst;
   strcpy(rhs,"%z = %#z");
   if (xx>=8) {
     if (xx<=11 && xx!=8) goto illegal_inst; /* can't change rN, rO, rS */
@@ -1107,7 +1108,8 @@ case GET:@+if (yy!=0 || zz>=32) goto illegal_inst;
       new_Q.h = new_Q.l = 0;
   }
   goto store_x;
-case PUT: case PUTI:@+ if (yy!=0 || xx>=32) goto illegal_inst;
+case PUTI: z.l=yz, yy=0; 
+case PUT: if (yy!=0 || xx>=32) goto illegal_inst;
   strcpy(rhs,"%z = %#z");
   if (xx>=8) {
     if (xx==9) goto illegal_inst; /* can't change rN */
@@ -1224,8 +1226,8 @@ ll=mem_find(g[rS]);
 test_load_bkpt(ll);@+test_load_bkpt(ll+1);
 if (k==rZ+1) { 
   if (!MMIX_LDO(a,g[rS])) { w=g[rS]; goto page_fault; }
-  x.l=G=g[rG].l=a.h>>24;
-  a.l=g[rA].l=a.l&0x3ffff;
+  x.l=G=g[rG].l=a.h>>24, a.l=g[rA].l=a.l&0x3ffff;
+  if (G<32) { x.l=G=g[rG].l=32;  goto illegal_inst; }
 }
 else
   if (!MMIX_LDO(g[k],g[rS]))  { w=g[rS]; goto page_fault; }
@@ -1357,10 +1359,10 @@ break;
 translation_bypassed_inst: strcpy(lhs,"!negative address in load/store");
 g[rQ].h |= N_BIT; new_Q.h |= N_BIT; /* set the n bit */
  goto break_inst;
-privileged_inst: strcpy(lhs,"!kernel only");
+privileged_inst: strcpy(lhs,"!privileged");
 g[rQ].h |= K_BIT; new_Q.h |= K_BIT; /* set the k bit */
  goto break_inst;
-illegal_inst: strcpy(lhs,"!broken");
+illegal_inst: strcpy(lhs,"!illegal");
 g[rQ].h |= B_BIT; new_Q.h |= B_BIT; /* set the b bit */
  goto break_inst;
 protection_violation: strcpy(lhs,"!protected");
@@ -1895,7 +1897,7 @@ else
   if (g[rI].l<=info[op].oops && g[rI].l && g[rI].h==0) tracing=breakpoint=true;
 @y
   if (g[rI].l<=info[op].oops && g[rI].l && g[rI].h==0) 
-    g[rQ].l |= IN_BIT, new_Q.l |= IN_BIT, tracing=true, breakpoint|=trace_bit; 
+    g[rQ].l |= IN_BIT, new_Q.l |= IN_BIT; 
 @z
 
 
