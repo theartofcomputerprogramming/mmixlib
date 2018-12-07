@@ -169,7 +169,7 @@ extern int mmix_load_file(char *mmo_file_name);
 /* call to load a file */
 extern int mmix_commandline(int argc, char *argv[]);
 /* call to provide a commandline to mmix (call after loading files!)*/
-extern int	mmix_interact(void);      
+extern void	mmix_interact(void);      
 /* mmix user interaction */
 extern int mmix_fetch_instruction(void);
 /* called to fetch one instruction returns zero on error */
@@ -177,12 +177,16 @@ extern int mmix_resume(void);
 /* called instead of mmix_fetch_insruction after a RESUME */
 extern int mmix_perform_instruction(void); 
 /* called to execute one instruction */
+extern void mmix_trace_fetch(void);
+/* Print the frequency count, the location, and the instruction*/
+extern void mmix_trace_perform(void);
+/* Print a stream-of-consciousness description of the instruction */
 extern void mmix_trace(void);
 /* tests for tracing and outputs a trace of the instruction */
 /* extern void mmix_exit(int returncode); */
 /* call to cause a running mmix simulator to return*/
-extern void mmix_dynamic_trap(void);
-/* check for dynamic traps */
+extern bool mmix_dynamic_trap(void);
+/* check for dynamic traps return true if switching to trap handler */
 extern void mmix_profile(void);
 /* print the profile */
 extern void show_stats(bool verbose);
@@ -200,7 +204,6 @@ extern bool halted;
 extern int breakpoint;
 extern bool interrupt;
 extern bool interacting;
-extern octa rOlimit;
 extern bool line_listed; /* have we listed the buffer contents? */
 extern octa neg_one;
 extern bool tracing;
@@ -209,7 +212,6 @@ extern octa loc;
 extern octa inst_ptr;
 extern tetra inst;
 extern bool show_operating_system;
-extern bool trace_once;
 extern bool resuming;
 extern mmix_opcode op;
 extern bool profiling;

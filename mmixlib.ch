@@ -245,6 +245,7 @@ And again.
 The macro mmo_load becomes a function,
 which uses MMIX_LDT and MMIX_STT as defined in libconfig.h.
 
+line 940
 @x
 @d mmo_load(loc,val) ll=mem_find(loc), ll->tet^=val
 @y
@@ -282,6 +283,17 @@ we reset the frequency and possibly record file, line, and loc.
     cur_line++;
 @z
 
+
+We add a variable for the current frequency.
+@x
+int cur_line; /* the current position in |cur_file|, if nonzero */
+@y
+int cur_line; /* the current position in |cur_file|, if nonzero */
+tetra cur_freq; /* the current frequency, if nonzero */
+@z
+
+
+
 The next lines of code complete loading the object file.
 
 @x
@@ -290,6 +302,12 @@ cur_loc.h=cur_loc.l=0;
 @y
 @ @<Load object file@>=
 cur_loc.h=cur_loc.l=0;
+@z
+
+@x
+cur_line=0;
+@y
+cur_freq=cur_line=0;
 @z
 
 mmo files use local file numbers.
@@ -405,7 +423,6 @@ g[255]=incr(aux,12*8); /* we will \.{UNSAVE} from here, to get going */
   g[255] = aux;
   g[rXX].h = 0; g[rXX].l = ((tetra)UNSAVE<<24)+255; /* \.{UNSAVE} \$255 */
   rzz = 1;
-  trace_once=interacting;
 /*  RESUME 0 will not work for x = 0
     inst_ptr = x;
     g[255] = aux;
@@ -426,7 +443,7 @@ The source line buffer is allocated once.
 if (buf_size<72) buf_size=72;
 @y
 @<Set up persistent data@>=
-if (buf_size<72) buf_size=72;
+if (buf_size<=0) buf_size=256;
 @z
 
 The display of source lines gets its own file.
@@ -588,8 +605,10 @@ In all other cases, we set the |trace_bit|.
 
 @x
 bool breakpoint; /* should we pause after the current instruction? */
+bool tracing; /* should we trace the current instruction? */
 @y
 int breakpoint=0; /* what caused the pause after the current instruction? */
+bool tracing; /* should we trace the current instruction? */
 @z
 
 
@@ -597,12 +616,9 @@ int breakpoint=0; /* what caused the pause after the current instruction? */
 bool interacting; /* are we in interactive mode? */
 @y
 bool interacting=false; /* are we in interactive mode? */
-bool trace_once=false;
 #ifdef MMIX_TRAP
 bool show_operating_system = false; /* do we show negative addresses */
 #endif
-octa rOlimit={-1,-1}; /* tracing and break only if g[rO]<=rOlimit */
-bool interact_after_resume = false;
 @z
 
 We make some more variables global.
@@ -636,11 +652,16 @@ loading the instruction is postponed
 @z
 
 When we hit an execute breakpoint, we set the exec bit in |breakpoint|.
-
+We keep the current frequency for tracing.
 @x
+  ll->freq++;
   if (ll->bkpt&exec_bit) breakpoint=true;
+  tracing=breakpoint||(ll->bkpt&trace_bit)||(ll->freq<=trace_threshold);
 @y
+  cur_freq=++(ll->freq);
   if (ll->bkpt&exec_bit) breakpoint|=exec_bit;
+  if ((ll->bkpt&trace_bit)||(ll->freq<=trace_threshold)) breakpoint|=trace_bit;
+  tracing=(breakpoint!=0);
 @z
 
 
@@ -1341,7 +1362,7 @@ case SWYM:
      strcpy(rhs,"$%x,%z");
      z.h=0, z.l=yz;
      x.h=0, x.l=xx;
-     tracing=interacting;
+     tracing= interacting;
      breakpoint=(breakpoint&0xFF) | (yz<<8);
      interrupt=false;
      @<Set |b| from register X@>;
@@ -1350,7 +1371,6 @@ case SWYM:
      if (n>6 && strncmp(buf,"DEBUG ",6)==0) 
      { printf("\n%s!\n",buf+6);
        sprintf(rhs,"rF=#%08X%08X\n",g[rF].h, g[rF].l);
-       tracing= true;
      }
  }
  else
@@ -1392,7 +1412,6 @@ case TRAP:@+if (xx==0 && yy<=max_sys_call)
         @<Prepare memory arguments $|ma|={\rm M}[a]$ and $|mb|={\rm M}[b]$ if needed@>;
       }
      else strcpy(rhs, "%#x -> %#y");
- if (tracing && !show_operating_system) interact_after_resume = true;    
  x.h=sign_bit, x.l=inst;
  @<Initiate a trap interrupt@>
  inst_ptr=y=g[rT];
@@ -1703,6 +1722,7 @@ if (!resuming)
             g[rQ].h, g[rQ].l, g[rK].h, g[rK].l);
     @<Initiate a trap interrupt@>
     inst_ptr=y=g[rTT];
+    return true;
   }
 }
 
@@ -1795,10 +1815,6 @@ else if ( rzz == 1)
   g[rK]=g[255];
   x=g[255]=g[rBB];
   @<Check for security violation@>
-  if (interact_after_resume)
-  { breakpoint|=trace_bit;
-    interact_after_resume = false;
-  }
 }
 else goto illegal_inst;
 if (!(b.h&sign_bit)) @<Prepare to perform a ropcode@>
@@ -1902,14 +1918,10 @@ else
 
 
 @x
-if (tracing) {
+  ll=mem_find(loc);
+  printf("%10d. %08x%08x: %08x (%s) ",ll->freq,loc.h,loc.l,inst,info[op].name);
 @y
-if (trace_once || (tracing && 
-#ifdef MMIX_TRAP
-(!(loc.h&sign_bit) || show_operating_system) &&
-#endif
-   (g[rO].h<rOlimit.h || (g[rO].h==rOlimit.h&&g[rO].l<=rOlimit.l)))) {
-   trace_once=false;
+  printf("%10d. %08x%08x: %08x (%s) ",cur_freq,loc.h,loc.l,inst,info[inst>>24].name);
 @z
 
 
@@ -2186,15 +2198,15 @@ int mmix_commandline(int argc, char *argv[])
 
 static octa scan_hex(char *s, octa offset);
 
-int	mmix_interact(void)      
+void mmix_interact(void)      
 /* return zero to end the simulation */
 { int j,k; /* miscellaneous indices */
   mem_tetra *ll; /* current place in the simulated memory */
   char *p; /* current place in a string */
   @<Interact with the user@>;
-  return 1;
+  return;
 end_simulation:
-  return 0;
+  halted=true;
 }
 
 @ @(libfetch.c@>=
@@ -2213,6 +2225,9 @@ int mmix_fetch_instruction(void)
 /* return zero if no instruction was loaded */
 { mem_tetra *ll; /* current place in the simulated memory */
   @<Fetch the next instruction@>;
+  op=inst>>24;@+xx=(inst>>16)&0xff;@+yy=(inst>>8)&0xff;@+zz=inst&0xff;
+  f=info[op].flags;@+yz=inst&0xffff;
+  x=y=z=a=b=zero_octa;@+ exc=0;@+ old_L=L;
   return 1;
 
 protection_violation: 
@@ -2247,9 +2262,6 @@ page_fault:
 #include "mmix-io.h"
 #include "libimport.h"
 
-
-static bool interact_after_resume= false;
-
 @<Stack store@>@;
 @<Stack load@>@;
 @<Register truth@>@;
@@ -2262,11 +2274,27 @@ int mmix_perform_instruction(void)
 
 @ @(libtrace.c@>=
 
-void mmix_trace(void)
-{ mem_tetra *ll; /* current place in the simulated memory */
-  char *p; /* current place in a string */
+void mmix_trace_fetch(void)
+{ @<Print the frequency count, the location, and the instruction@>;
+}
 
-  @<Trace the current instruction, if requested@>;
+void mmix_trace_perform(void)
+{   char *p; /* current place in a string */
+ @<Print a stream-of-consciousness description of the instruction@>;
+}
+
+void mmix_trace(void)
+{ if (tracing) {
+  if (showing_source && cur_line) show_line();
+  mmix_trace_fetch();
+  mmix_trace_perform();
+  if (showing_stats || breakpoint) show_stats(breakpoint);
+  just_traced=true;
+}@+else if (just_traced) {
+  printf(" ...............................................\n");
+  just_traced=false;
+  shown_line=-gap-1; /* gap will not be filled */
+  }
 } 
 
 @ @(libdtrap.c@>=
@@ -2280,9 +2308,10 @@ void mmix_trace(void)
 #include "libimport.h"
 
 
-void mmix_dynamic_trap(void)
+bool mmix_dynamic_trap(void)
 {  
    @<Check for trap interrupt@>;
+   return false;
 }
 
 @ @(libprofile.c@>=
@@ -2377,7 +2406,7 @@ boot:
   mmix_load_file(*cur_arg);
   mmix_commandline(argc, argv);
   breakpoint=0;
-  if (interacting && !mmix_interact()) goto end_simulation;
+  if (interacting) mmix_interact();
   while (true) {
     if (interrupt && !breakpoint) breakpoint|=trace_bit, interacting=true, interrupt=false;
     else
@@ -2385,7 +2414,7 @@ boot:
     if (!(inst_ptr.h&sign_bit) || show_operating_system)
 #endif
     { breakpoint=0;
-      if (interacting && !mmix_interact()) goto end_simulation;
+      if (interacting) mmix_interact();
     }
     if (halted) break;
     do   
