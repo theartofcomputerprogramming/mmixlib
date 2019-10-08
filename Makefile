@@ -39,8 +39,10 @@ boilerplate.w: $(MMIXWARE)/boilerplate.w
 abstime.h: $(MMIXWARE)/abstime.h
 	cp $< $@
 
+$(MMIXWARE)/abstime: 
+	$(MAKE) -C $(MMIXWARE) abstime
+
 $(MMIXWARE)/abstime.h: $(MMIXWARE)/abstime
-	$(MAKE) -C mmixware abstime
 	$(MMIXWARE)/abstime > $(MMIXWARE)/abstime.h
 
 mmix-arith.c: boilerplate.w $(MMIXWARE)/mmix-arith.w
