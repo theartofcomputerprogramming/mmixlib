@@ -1279,7 +1279,11 @@ case SYNCID: case SYNCIDI:
  else
    MMIX_STORE_DCACHE(w,xx+1);
  break;
-case PREST: case PRESTI: x=incr(w,xx);@+break;
+case PREST: case PRESTI: 
+ /* Currently ignored. 
+    We could allocate a cache line, omit loading data,
+    fill it with zeros, and make it VALID. */
+ x=incr(w,xx);@+break;
 case SYNCD: case SYNCDI:  
  MMIX_STORE_DCACHE(w,xx+1);
  if (loc.h&sign_bit)

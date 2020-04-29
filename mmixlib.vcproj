@@ -801,8 +801,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-arith with arith-win changefile"
-						CommandLine="ctangle mmixware\mmix-arith.w arith-win.ch&#x0D;&#x0A;"
-						AdditionalDependencies="mmix-arith.ch"
+						CommandLine="ctangle mmixware\mmix-arith.w arith-win.ch mmix-arith.c"
+						AdditionalDependencies="arith-win.ch"
 						Outputs="mmix-arith.c"
 					/>
 				</FileConfiguration>
@@ -812,7 +812,8 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-arith with arith-win changefile"
-						CommandLine="ctangle mmixware\mmix-arith.w arith-win.ch&#x0D;&#x0A;"
+						CommandLine="ctangle mmixware\mmix-arith.w arith-win.ch mmix-arith.c"
+						AdditionalDependencies="arith-win.ch"
 						Outputs="mmix-arith.c"
 					/>
 				</FileConfiguration>
@@ -826,7 +827,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-io with libio.ch"
-						CommandLine="ctangle mmixware\mmix-io.w libio.ch&#x0D;&#x0A;"
+						CommandLine="ctangle mmixware\mmix-io.w libio.ch mmix-io.c"
 						AdditionalDependencies="libio.ch"
 						Outputs="mmix-io.c"
 					/>
@@ -837,7 +838,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="ctangle mmix-io with libio.ch"
-						CommandLine="ctangle mmixware\mmix-io.w libio.ch&#x0D;&#x0A;"
+						CommandLine="ctangle mmixware\mmix-io.w libio.ch mmix-io.c"
 						AdditionalDependencies="libio.ch"
 						Outputs="mmix-io.c"
 					/>

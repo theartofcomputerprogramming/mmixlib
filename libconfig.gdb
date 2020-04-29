@@ -20,8 +20,8 @@
 #define MMIX_LDW(val,addr)  load_data(2,&(val),addr,0)
 #define MMIX_LDB(val,addr)  load_data(1,&(val),addr,0)
 
-#define MMIX_STO_UNCACHED(val,addr) store_data_uncached(8,val,addr) 
-#define MMIX_LDO_UNCACHED(val,addr) load_data_uncached(8,&(val),addr,0)
+#define MMIX_STO_UNCACHED(val,addr) store_octa_uncached(val,addr) 
+#define MMIX_LDO_UNCACHED(val,addr) load_octa_uncached(&(val),addr,0)
 
 
 #define MMIX_FETCH(inst,loc) load_instruction(&inst,loc)
@@ -86,7 +86,7 @@
 #define MMIX_UPDATE_VTC(w) update_vtc(w)
 #define MMIX_CLEAR_DVTC() clear_all_data_vtc()
 #define MMIX_CLEAR_IVTC() clear_all_instruction_vtc()
-#define MMIX_PRELOAD_DCACHE(w,xx) preload_data_cache(w,xx)
+#define MMIX_PRELOAD_DCACHE(w,xx) preload_data(w,xx)
 #define MMIX_PRELOAD_ICACHE(w,xx) prego_instruction(w,xx)
 #define MMIX_STORE_DCACHE(w,xx) write_data(w,xx)
 #define MMIX_DELETE_DCACHE(w,xx) delete_data(w,xx)
