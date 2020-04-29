@@ -25,7 +25,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="build abstime.c"
-				CommandLine="ctangle mmixware\abstime.w abstime.c"
+				CommandLine="ctangle mmixware\abstime.w empty.ch abstime.c"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -105,7 +105,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="build abstime.c"
-				CommandLine="ctangle mmixware\abstime.w abstime.c"
+				CommandLine="ctangle mmixware\abstime.w empty.ch abstime.c"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -170,7 +170,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Generate abstime.h"
-				CommandLine="$(OutDir)\abstime.exe &gt; $(SolutionDir)\abstime.h"
+				CommandLine="$(OutDir)\abstime.exe &gt; $(InputDir)\abstime.h"
 			/>
 		</Configuration>
 	</Configurations>
